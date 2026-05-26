@@ -9,7 +9,7 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://host.docker.internal:3001}
       VITE_AUTH_DISABLED: ${VITE_AUTH_DISABLED:-false}
-      VITE_PLATEFORM_URL: ${VITE_PLATEFORM_URL:-https://plateform.konitys.fr}
+      VITE_PLATEFORM_URL: ${VITE_PLATEFORM_URL:-https://plateformdev.orkessi.com}
       VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-https://plateformdev-auth.orkessi.com}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-konitys}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-helpselfizee}

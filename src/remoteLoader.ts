@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 const PLATEFORM_URL =
-  import.meta.env.VITE_PLATEFORM_URL || "https://plateform.konitys.fr";
+  import.meta.env.VITE_PLATEFORM_URL || "https://plateformdev.orkessi.com";
 
 interface RemoteContainer {
   init: (shareScope: Record<string, unknown>) => void;
