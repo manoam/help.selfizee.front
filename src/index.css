@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -11,12 +12,45 @@
   --radius: 0.5rem;
 }
 
+/* Konitys tokens — repris du projet stock-management/client-stock pour cohérence visuelle. */
+:root {
+  --k-bg: #EBF0FA;
+  --k-surface: #FFFFFF;
+  --k-surface-2: #E3EAF5;
+  --k-border: #D6DFED;
+
+  --k-text: #1A1D2B;
+  --k-muted: #5E6A82;
+
+  --k-primary: #4F46E5;
+  --k-primary-2: #EEF2FF;
+  --k-primary-border: #C7D2FE;
+
+  --k-success: #16A34A;
+  --k-warning: #EA580C;
+  --k-danger: #DC2626;
+
+  --k-sidebar-bg: #1E2A40;
+  --k-sidebar-text: #94A3B8;
+  --k-sidebar-text-active: #F1F5F9;
+  --k-sidebar-hover: #263650;
+  --k-sidebar-border: #2F4264;
+  --k-sidebar-section: #6B85A8;
+
+  --k-sidebar-w: 224px;
+  --k-sidebar-rail: 52px;
+  --k-topbar-h: 48px;
+}
+
 * {
   border-color: var(--color-border);
+  box-sizing: border-box;
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
