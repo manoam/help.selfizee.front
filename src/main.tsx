@@ -6,6 +6,7 @@ import { AuthProvider } from "react-oidc-context";
 
 import { App } from "./App";
 import { oidcConfig } from "./lib/oidc";
+import { AUTH_DISABLED } from "./lib/authConfig";
 import { AuthBridge } from "./components/AuthBridge";
 import "./index.css";
 
@@ -15,16 +16,22 @@ const queryClient = new QueryClient({
   },
 });
 
+const appTree = (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </QueryClientProvider>
+);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider {...oidcConfig}>
-      <AuthBridge>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </QueryClientProvider>
-      </AuthBridge>
-    </AuthProvider>
+    {AUTH_DISABLED ? (
+      appTree
+    ) : (
+      <AuthProvider {...oidcConfig}>
+        <AuthBridge>{appTree}</AuthBridge>
+      </AuthProvider>
+    )}
   </StrictMode>,
 );

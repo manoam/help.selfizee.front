@@ -2,10 +2,15 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 
 import { useMe } from "../hooks/useAuth";
+import { AUTH_DISABLED } from "../lib/authConfig";
 
 export function AdminLayout() {
   const { data: me } = useMe();
-  const oidc = useAuth();
+  // useAuth() ne peut être appelé que si AuthProvider est monté (donc auth activée).
+  // En mode bypass, on stub signoutRedirect.
+  const oidc = AUTH_DISABLED
+    ? { signoutRedirect: () => Promise.resolve() }
+    : useAuth();
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
     `block px-3 py-2 rounded text-sm ${

@@ -2,7 +2,14 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useAuth } from "react-oidc-context";
 
+import { AUTH_DISABLED } from "../lib/authConfig";
+
 export function RequireAuth({ children }: { children: ReactNode }) {
+  if (AUTH_DISABLED) return <>{children}</>;
+  return <RequireAuthOidc>{children}</RequireAuthOidc>;
+}
+
+function RequireAuthOidc({ children }: { children: ReactNode }) {
   const auth = useAuth();
 
   useEffect(() => {
