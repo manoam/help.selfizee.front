@@ -1,11 +1,7 @@
-import { Outlet } from "react-router-dom";
+import AppLayout from "../components/layout/AppLayout";
 
-import { AppShell } from "../components/AppShell";
-
+// AdminLayout délègue à AppLayout, qui charge HeaderBar + Sidebar depuis le hub
+// Konitys (Module Federation). Voir src/components/layout/AppLayout.tsx.
 export function AdminLayout() {
-  return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
-  );
+  return <AppLayout />;
 }
