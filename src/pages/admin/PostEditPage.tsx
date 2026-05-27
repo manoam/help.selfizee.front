@@ -2,6 +2,25 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSONContent } from "@tiptap/react";
+import {
+  FileText,
+  Layers,
+  Tag as TagIcon,
+  Server,
+  Eye,
+  Plus,
+  Trash2,
+  ExternalLink,
+  Save,
+  X,
+  Star,
+  Users,
+  Link2,
+  HelpCircle,
+  Paperclip,
+  AlertCircle,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import {
   api,
@@ -47,7 +66,7 @@ type FormState = {
   question: string;
   vueClient: ViewBlock;
   vueCallCenter: ViewBlock;
-  vueInterne: { intro: string; probleme: string }; // contenu interne = `contenu` JSON principal
+  vueInterne: { intro: string; probleme: string };
   categories: CategoryRow[];
   tagIds: number[];
   modelBornes: ModelBorneRow[];
@@ -78,6 +97,15 @@ const emptyState: FormState = {
 
 type ViewTab = "client" | "callcenter" | "interne";
 
+const STATUS_META: Record<
+  FormState["status"],
+  { label: string; bg: string; text: string }
+> = {
+  DRAFT: { label: "Brouillon", bg: "bg-amber-50", text: "text-amber-700" },
+  PUBLISHED: { label: "Publié", bg: "bg-emerald-50", text: "text-emerald-700" },
+  ARCHIVED: { label: "Archivé", bg: "bg-slate-100", text: "text-slate-600" },
+};
+
 export function PostEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -86,7 +114,6 @@ export function PostEditPage() {
   const [form, setForm] = useState<FormState>(emptyState);
   const [tab, setTab] = useState<ViewTab>("client");
 
-  // Chargement initial du post à éditer
   const { data: existing } = useQuery({
     queryKey: ["post-edit", id],
     queryFn: async () => {
@@ -141,7 +168,6 @@ export function PostEditPage() {
     });
   }, [existing]);
 
-  // Données de référence
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => (await api.get<CategoryDto[]>("/categories")).data,
@@ -203,11 +229,11 @@ export function PostEditPage() {
     return m;
   }, [modelBornes]);
 
-  // Save
   const save = useMutation({
-    mutationFn: async (
-      args: { stayOnPage: boolean; data: FormState },
-    ): Promise<PostDetail> => {
+    mutationFn: async (args: {
+      stayOnPage: boolean;
+      data: FormState;
+    }): Promise<PostDetail> => {
       const payload = serializePayload(args.data);
       if (isNew) {
         const { data } = await api.post<PostDetail>("/posts", payload);
@@ -234,7 +260,6 @@ export function PostEditPage() {
     setForm((f) => {
       const next = [...f.categories];
       next[idx] = { ...next[idx], ...patch };
-      // Reset sous-niveaux quand un parent change.
       if (patch.categoryId !== undefined) {
         next[idx].subCategoryId = null;
         next[idx].subSubCategoryId = null;
@@ -256,74 +281,118 @@ export function PostEditPage() {
     });
   };
 
+  const statusMeta = STATUS_META[form.status];
+
   return (
-    <div className="max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">
-          {isNew ? "Nouveau document" : "Éditer le document"}
-        </h1>
-        {!isNew && existing && (
-          <a
-            href={`/post/${existing.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-[--k-primary] hover:underline"
-          >
-            Voir la page publique →
+    <div className="max-w-6xl pb-24">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 text-xs text-[--k-muted] mb-2">
+          <a href="/admin/posts" className="hover:text-[--k-text] transition">
+            Documents
           </a>
-        )}
+          <span>›</span>
+          <span className="text-[--k-text]">
+            {isNew ? "Nouveau" : existing?.titre ?? "…"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-[--k-text]">
+              {isNew ? "Nouveau document" : "Édition du document"}
+            </h1>
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusMeta.bg} ${statusMeta.text}`}
+            >
+              {statusMeta.label}
+            </span>
+            {form.isFavourite && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                Favori
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {!isNew && existing && (
+              <>
+                <a
+                  href={`/post/${existing.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--k-primary] border border-[--k-primary-border] bg-[--k-primary-2] rounded-lg hover:brightness-95 transition"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Voir la page
+                </a>
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/posts/new")}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Créer un nouveau
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Colonne principale */}
         <div className="lg:col-span-2 space-y-6">
-          <Card title="Contenu principal">
-            <Field label="Titre *">
+          <Card icon={FileText} title="Contenu principal">
+            <Field label="Titre" required>
               <input
                 className="input-field"
                 value={form.titre}
                 onChange={(e) => updateForm("titre", e.target.value)}
+                placeholder="Titre du document"
               />
             </Field>
-            <Field label="Slug (optionnel — sinon généré)">
-              <input
-                className="input-field"
-                value={form.slug}
-                onChange={(e) => updateForm("slug", e.target.value)}
-              />
-            </Field>
-            <Field label="Résumé (court)">
-              <textarea
-                className="input-field"
-                rows={2}
-                value={form.resume}
-                onChange={(e) => updateForm("resume", e.target.value)}
-              />
-            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Slug" hint="optionnel — généré si vide">
+                <input
+                  className="input-field"
+                  value={form.slug}
+                  onChange={(e) => updateForm("slug", e.target.value)}
+                  placeholder="auto"
+                />
+              </Field>
+              <Field label="Résumé">
+                <input
+                  className="input-field"
+                  value={form.resume}
+                  onChange={(e) => updateForm("resume", e.target.value)}
+                  placeholder="Une phrase courte"
+                />
+              </Field>
+            </div>
             <Field label="Description du problème">
               <textarea
                 className="input-field"
-                rows={5}
+                rows={4}
                 value={form.descriptionProbleme}
                 onChange={(e) =>
                   updateForm("descriptionProbleme", e.target.value)
                 }
+                placeholder="Quel est le problème adressé par ce document ?"
               />
             </Field>
           </Card>
 
-          <Card title="Vues (notice / problème par profil)">
-            {/* Onglets */}
-            <div className="flex gap-2 border-b border-[--k-border] mb-4">
+          <Card icon={Eye} title="Vues (notice / problème par profil)">
+            <div className="flex gap-1 p-1 bg-[--k-surface-2] rounded-lg mb-4 w-fit">
               {(["client", "callcenter", "interne"] as ViewTab[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setTab(t)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition ${
+                  className={`px-4 py-1.5 text-xs font-medium rounded-md transition ${
                     tab === t
-                      ? "border-[--k-primary] text-[--k-primary]"
-                      : "border-transparent text-[--k-muted] hover:text-[--k-text]"
+                      ? "bg-white text-[--k-text] shadow-sm"
+                      : "text-[--k-muted] hover:text-[--k-text]"
                   }`}
                 >
                   {t === "client"
@@ -349,10 +418,10 @@ export function PostEditPage() {
             )}
             {tab === "interne" && (
               <div className="space-y-4">
-                <Field label="Intro :">
+                <Field label="Intro">
                   <textarea
                     className="input-field"
-                    rows={6}
+                    rows={5}
                     value={form.vueInterne.intro}
                     onChange={(e) =>
                       updateForm("vueInterne", {
@@ -362,18 +431,27 @@ export function PostEditPage() {
                     }
                   />
                 </Field>
-                <Field label="Contenu (richtext) :">
-                  <RichTextEditor
-                    value={form.contenu}
-                    onChange={(json, text) =>
-                      setForm((f) => ({ ...f, contenu: json, contenuText: text }))
-                    }
-                  />
+                <Field
+                  label="Contenu"
+                  hint="éditeur richtext (sauvegardé en JSON TipTap)"
+                >
+                  <div className="border border-[--k-border] rounded-lg overflow-hidden bg-white">
+                    <RichTextEditor
+                      value={form.contenu}
+                      onChange={(json, text) =>
+                        setForm((f) => ({
+                          ...f,
+                          contenu: json,
+                          contenuText: text,
+                        }))
+                      }
+                    />
+                  </div>
                 </Field>
-                <Field label="Problème :">
+                <Field label="Problème">
                   <textarea
                     className="input-field"
-                    rows={6}
+                    rows={5}
                     value={form.vueInterne.probleme}
                     onChange={(e) =>
                       updateForm("vueInterne", {
@@ -387,17 +465,18 @@ export function PostEditPage() {
             )}
           </Card>
 
-          <Card title="Questions">
+          <Card icon={HelpCircle} title="Questions">
             <textarea
               className="input-field"
-              rows={5}
+              rows={4}
               value={form.question}
               onChange={(e) => updateForm("question", e.target.value)}
+              placeholder="Questions fréquemment associées à ce document"
             />
           </Card>
 
           {!isNew && existing && (
-            <Card title="Documents">
+            <Card icon={Paperclip} title="Documents joints">
               <AttachmentsManager postId={existing.id} />
             </Card>
           )}
@@ -405,113 +484,123 @@ export function PostEditPage() {
 
         {/* Colonne latérale */}
         <div className="space-y-6">
-          <Card title="Catégorisation">
-            {form.categories.map((row, idx) => {
-              const subCats = row.categoryId
-                ? subCatsByCat.get(row.categoryId) ?? []
-                : [];
-              const subSubCats = row.subCategoryId
-                ? subSubCatsBySub.get(row.subCategoryId) ?? []
-                : [];
-              return (
-                <div
-                  key={idx}
-                  className="space-y-2 pb-3 mb-3 border-b border-[--k-border] last:border-0 last:pb-0 last:mb-0"
-                >
-                  <Field label="Catégorie *">
-                    <select
-                      className="input-field"
-                      value={row.categoryId ?? ""}
-                      onChange={(e) =>
-                        updateCategoryRow(idx, {
-                          categoryId: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
-                      }
-                    >
-                      <option value="">Sélectionner</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nom}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Sous catégorie">
-                    <select
-                      className="input-field"
-                      value={row.subCategoryId ?? ""}
-                      disabled={!row.categoryId}
-                      onChange={(e) =>
-                        updateCategoryRow(idx, {
-                          subCategoryId: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
-                      }
-                    >
-                      <option value="">Sélectionner</option>
-                      {subCats.map((sc) => (
-                        <option key={sc.id} value={sc.id}>
-                          {sc.nom}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Sous sous catégorie">
-                    <select
-                      className="input-field"
-                      value={row.subSubCategoryId ?? ""}
-                      disabled={!row.subCategoryId}
-                      onChange={(e) =>
-                        updateCategoryRow(idx, {
-                          subSubCategoryId: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
-                      }
-                    >
-                      <option value="">Sélectionner</option>
-                      {subSubCats.map((ssc) => (
-                        <option key={ssc.id} value={ssc.id}>
-                          {ssc.nom}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  {form.categories.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateForm(
-                          "categories",
-                          form.categories.filter((_, i) => i !== idx),
-                        )
-                      }
-                      className="text-xs text-[--k-danger] hover:underline"
-                    >
-                      Retirer cette catégorie
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() =>
-                updateForm("categories", [
-                  ...form.categories,
-                  { categoryId: null, subCategoryId: null, subSubCategoryId: null },
-                ])
-              }
-              className="text-xs text-[--k-primary] hover:underline"
-            >
-              + Ajouter une catégorie
-            </button>
+          <Card icon={Layers} title="Catégorisation">
+            <div className="space-y-3">
+              {form.categories.map((row, idx) => {
+                const subCats = row.categoryId
+                  ? subCatsByCat.get(row.categoryId) ?? []
+                  : [];
+                const subSubCats = row.subCategoryId
+                  ? subSubCatsBySub.get(row.subCategoryId) ?? []
+                  : [];
+                return (
+                  <div
+                    key={idx}
+                    className="space-y-2 p-3 bg-[--k-surface-2] rounded-lg relative"
+                  >
+                    {form.categories.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateForm(
+                            "categories",
+                            form.categories.filter((_, i) => i !== idx),
+                          )
+                        }
+                        className="absolute top-2 right-2 text-[--k-muted] hover:text-[--k-danger] transition"
+                        title="Retirer"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <Field label="Catégorie" required>
+                      <select
+                        className="input-field"
+                        value={row.categoryId ?? ""}
+                        onChange={(e) =>
+                          updateCategoryRow(idx, {
+                            categoryId: e.target.value
+                              ? Number(e.target.value)
+                              : null,
+                          })
+                        }
+                      >
+                        <option value="">Sélectionner</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.nom}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    {row.categoryId && subCats.length > 0 && (
+                      <Field label="Sous-catégorie">
+                        <select
+                          className="input-field"
+                          value={row.subCategoryId ?? ""}
+                          onChange={(e) =>
+                            updateCategoryRow(idx, {
+                              subCategoryId: e.target.value
+                                ? Number(e.target.value)
+                                : null,
+                            })
+                          }
+                        >
+                          <option value="">Sélectionner</option>
+                          {subCats.map((sc) => (
+                            <option key={sc.id} value={sc.id}>
+                              {sc.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                    {row.subCategoryId && subSubCats.length > 0 && (
+                      <Field label="Sous-sous-catégorie">
+                        <select
+                          className="input-field"
+                          value={row.subSubCategoryId ?? ""}
+                          onChange={(e) =>
+                            updateCategoryRow(idx, {
+                              subSubCategoryId: e.target.value
+                                ? Number(e.target.value)
+                                : null,
+                            })
+                          }
+                        >
+                          <option value="">Sélectionner</option>
+                          {subSubCats.map((ssc) => (
+                            <option key={ssc.id} value={ssc.id}>
+                              {ssc.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() =>
+                  updateForm("categories", [
+                    ...form.categories,
+                    {
+                      categoryId: null,
+                      subCategoryId: null,
+                      subSubCategoryId: null,
+                    },
+                  ])
+                }
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[--k-primary] hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Ajouter une catégorie
+              </button>
+            </div>
           </Card>
 
-          <Card title="Publication">
+          <Card icon={Eye} title="Publication">
             <Field label="Statut">
               <select
                 className="input-field"
@@ -525,111 +614,130 @@ export function PostEditPage() {
                 <option value="ARCHIVED">Archivé</option>
               </select>
             </Field>
-            <Field label="Niveaux d'accès">
+            <Field label="Niveaux d'accès" icon={Users}>
               <MultiSelect
-                options={typeProfils.map((tp) => ({ id: tp.id, label: tp.nom }))}
+                options={typeProfils.map((tp) => ({
+                  id: tp.id,
+                  label: tp.nom,
+                }))}
                 selectedIds={form.typeProfilIds}
                 onChange={(ids) => updateForm("typeProfilIds", ids)}
               />
             </Field>
-            <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer mt-2 select-none">
               <input
                 type="checkbox"
                 checked={form.isFavourite}
                 onChange={(e) => updateForm("isFavourite", e.target.checked)}
+                className="rounded border-[--k-border]"
               />
-              Afficher dans les favoris
+              <Star
+                className={`h-4 w-4 ${form.isFavourite ? "fill-amber-500 text-amber-500" : "text-[--k-muted]"}`}
+              />
+              <span className="text-[--k-text]">Afficher dans les favoris</span>
             </label>
           </Card>
 
-          <Card title="Gammes de bornes">
-            {form.modelBornes.map((row, idx) => {
-              const models = row.gammeBorneId
-                ? modelBornesByGamme.get(row.gammeBorneId) ?? []
-                : [];
-              return (
-                <div key={idx} className="space-y-2 mb-3">
-                  <Field label="Gamme">
-                    <select
-                      className="input-field"
-                      value={row.gammeBorneId ?? ""}
-                      onChange={(e) =>
-                        updateModelBorneRow(idx, {
-                          gammeBorneId: e.target.value
-                            ? Number(e.target.value)
-                            : null,
-                        })
+          <Card icon={Server} title="Gammes de bornes">
+            <div className="space-y-3">
+              {form.modelBornes.length === 0 && (
+                <p className="text-xs text-[--k-muted] italic">
+                  Aucune gamme associée
+                </p>
+              )}
+              {form.modelBornes.map((row, idx) => {
+                const models = row.gammeBorneId
+                  ? modelBornesByGamme.get(row.gammeBorneId) ?? []
+                  : [];
+                return (
+                  <div
+                    key={idx}
+                    className="space-y-2 p-3 bg-[--k-surface-2] rounded-lg relative"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateForm(
+                          "modelBornes",
+                          form.modelBornes.filter((_, i) => i !== idx),
+                        )
                       }
+                      className="absolute top-2 right-2 text-[--k-muted] hover:text-[--k-danger] transition"
+                      title="Retirer"
                     >
-                      <option value="">Sélectionner</option>
-                      {gammesBornes.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          {g.nom}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  {models.length > 0 && (
-                    <Field label="Modèle (optionnel)">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                    <Field label="Gamme">
                       <select
                         className="input-field"
-                        value={row.modelBorneId ?? ""}
+                        value={row.gammeBorneId ?? ""}
                         onChange={(e) =>
                           updateModelBorneRow(idx, {
-                            modelBorneId: e.target.value
+                            gammeBorneId: e.target.value
                               ? Number(e.target.value)
                               : null,
                           })
                         }
                       >
-                        <option value="">Toutes</option>
-                        {models.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.nom}
-                            {m.version ? `-${m.version}` : ""}
+                        <option value="">Sélectionner</option>
+                        {gammesBornes.map((g) => (
+                          <option key={g.id} value={g.id}>
+                            {g.nom}
                           </option>
                         ))}
                       </select>
                     </Field>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateForm(
-                        "modelBornes",
-                        form.modelBornes.filter((_, i) => i !== idx),
-                      )
-                    }
-                    className="text-xs text-[--k-danger] hover:underline"
-                  >
-                    Retirer
-                  </button>
-                </div>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() =>
-                updateForm("modelBornes", [
-                  ...form.modelBornes,
-                  { gammeBorneId: null, modelBorneId: null },
-                ])
-              }
-              className="text-xs text-[--k-primary] hover:underline"
-            >
-              + Ajouter une gamme
-            </button>
+                    {models.length > 0 && (
+                      <Field label="Modèle (optionnel)">
+                        <select
+                          className="input-field"
+                          value={row.modelBorneId ?? ""}
+                          onChange={(e) =>
+                            updateModelBorneRow(idx, {
+                              modelBorneId: e.target.value
+                                ? Number(e.target.value)
+                                : null,
+                            })
+                          }
+                        >
+                          <option value="">Toutes</option>
+                          {models.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.nom}
+                              {m.version ? `-${m.version}` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() =>
+                  updateForm("modelBornes", [
+                    ...form.modelBornes,
+                    { gammeBorneId: null, modelBorneId: null },
+                  ])
+                }
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[--k-primary] hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Ajouter une gamme
+              </button>
+            </div>
           </Card>
 
-          <Card title="Tags">
-            <MultiSelect
-              options={tags.map((t) => ({ id: t.id, label: t.name }))}
+          <Card icon={TagIcon} title="Tags">
+            <TagPicker
+              tags={tags}
               selectedIds={form.tagIds}
               onChange={(ids) => updateForm("tagIds", ids)}
             />
           </Card>
 
-          <Card title="Articles liés">
+          <Card icon={Link2} title="Articles liés">
             <RelatedPostsPicker
               selectedIds={form.relatedPostIds}
               excludeId={existing?.id}
@@ -640,35 +748,42 @@ export function PostEditPage() {
       </div>
 
       {save.isError && (
-        <p className="text-sm text-[--k-danger] mt-4">
+        <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-[--k-danger]">
+          <AlertCircle className="h-4 w-4 shrink-0" />
           Erreur lors de l'enregistrement.
-        </p>
+        </div>
       )}
 
-      <div className="flex gap-3 mt-6 pb-12">
-        <button
-          type="button"
-          onClick={() => save.mutate({ stayOnPage: true, data: form })}
-          disabled={save.isPending || !form.titre}
-          className="bg-[--k-success] text-white rounded px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          {save.isPending ? "..." : "Enregistrer et rester"}
-        </button>
-        <button
-          type="button"
-          onClick={() => save.mutate({ stayOnPage: false, data: form })}
-          disabled={save.isPending || !form.titre}
-          className="bg-[--k-success] text-white rounded px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
-          Enregistrer et quitter
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate("/admin/posts")}
-          className="border border-[--k-border] rounded px-4 py-2 text-sm"
-        >
-          Annuler
-        </button>
+      {/* Sticky save bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[--k-border] bg-white/95 backdrop-blur-sm shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
+        <div className="max-w-6xl mx-auto flex items-center justify-end gap-2 px-4 md:px-5 py-3">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/posts")}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+          >
+            <X className="h-4 w-4" />
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={() => save.mutate({ stayOnPage: true, data: form })}
+            disabled={save.isPending || !form.titre}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" />
+            Enregistrer et rester
+          </button>
+          <button
+            type="button"
+            onClick={() => save.mutate({ stayOnPage: false, data: form })}
+            disabled={save.isPending || !form.titre}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50 shadow-sm shadow-[--k-primary]/30"
+          >
+            <Save className="h-4 w-4" />
+            {save.isPending ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -676,10 +791,19 @@ export function PostEditPage() {
 
 // ----- Sous-composants -----
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="bg-white border border-[--k-border] rounded-2xl shadow-soft">
-      <div className="px-5 py-3 border-b border-[--k-border]">
+    <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-[--k-border] bg-gradient-to-r from-white to-[--k-surface-2]/50">
+        <Icon className="h-4 w-4 text-[--k-primary] shrink-0" />
         <h2 className="text-sm font-semibold text-[--k-text]">{title}</h2>
       </div>
       <div className="p-5 space-y-4">{children}</div>
@@ -689,16 +813,31 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function Field({
   label,
+  hint,
+  required,
+  icon: Icon,
   children,
 }: {
   label: string;
+  hint?: string;
+  required?: boolean;
+  icon?: LucideIcon;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-[--k-muted] mb-1">
-        {label}
-      </label>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        {Icon && <Icon className="h-3.5 w-3.5 text-[--k-muted]" />}
+        <label className="block text-xs font-semibold text-[--k-text]">
+          {label}
+          {required && <span className="text-[--k-danger] ml-0.5">*</span>}
+        </label>
+        {hint && (
+          <span className="text-[10px] text-[--k-muted] font-normal">
+            ({hint})
+          </span>
+        )}
+      </div>
       {children}
     </div>
   );
@@ -713,15 +852,15 @@ function ViewFields({
 }) {
   return (
     <div className="space-y-4">
-      <Field label="Intro :">
+      <Field label="Intro">
         <textarea
           className="input-field"
-          rows={6}
+          rows={5}
           value={value.intro}
           onChange={(e) => onChange({ ...value, intro: e.target.value })}
         />
       </Field>
-      <Field label="Contenu :">
+      <Field label="Contenu">
         <textarea
           className="input-field"
           rows={10}
@@ -729,10 +868,10 @@ function ViewFields({
           onChange={(e) => onChange({ ...value, notice: e.target.value })}
         />
       </Field>
-      <Field label="Problème :">
+      <Field label="Problème">
         <textarea
           className="input-field"
-          rows={6}
+          rows={5}
           value={value.probleme}
           onChange={(e) => onChange({ ...value, probleme: e.target.value })}
         />
@@ -760,26 +899,101 @@ function MultiSelect({
   return (
     <div className="border border-[--k-border] rounded-lg max-h-48 overflow-y-auto bg-white">
       {options.length === 0 && (
-        <div className="px-3 py-2 text-xs text-[--k-muted]">Aucune option</div>
+        <div className="px-3 py-2 text-xs text-[--k-muted] italic">
+          Aucune option disponible
+        </div>
       )}
-      {options.map((opt) => (
-        <label
-          key={opt.id}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-[--k-surface-2]"
-        >
-          <input
-            type="checkbox"
-            checked={selectedIds.includes(opt.id)}
-            onChange={() => toggle(opt.id)}
-          />
-          {opt.label}
-        </label>
-      ))}
+      {options.map((opt) => {
+        const checked = selectedIds.includes(opt.id);
+        return (
+          <label
+            key={opt.id}
+            className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition ${
+              checked
+                ? "bg-[--k-primary-2] text-[--k-primary]"
+                : "hover:bg-[--k-surface-2]"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => toggle(opt.id)}
+              className="rounded border-[--k-border]"
+            />
+            {opt.label}
+          </label>
+        );
+      })}
     </div>
   );
 }
 
-// ----- Serialisation vers payload API -----
+function TagPicker({
+  tags,
+  selectedIds,
+  onChange,
+}: {
+  tags: TagDto[];
+  selectedIds: number[];
+  onChange: (ids: number[]) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const selectedTags = tags.filter((t) => selectedIds.includes(t.id));
+  const filtered = tags
+    .filter((t) => !selectedIds.includes(t.id))
+    .filter((t) =>
+      search.trim()
+        ? t.name.toLowerCase().includes(search.toLowerCase())
+        : true,
+    )
+    .slice(0, 30);
+
+  return (
+    <div className="space-y-2">
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedTags.map((t) => (
+            <span
+              key={t.id}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[--k-primary-2] text-[--k-primary] border border-[--k-primary-border] rounded-full text-xs font-medium"
+            >
+              {t.name}
+              <button
+                type="button"
+                onClick={() => onChange(selectedIds.filter((x) => x !== t.id))}
+                className="hover:text-[--k-danger] transition"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <input
+        className="input-field"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Rechercher un tag..."
+      />
+      {filtered.length > 0 && (
+        <div className="border border-[--k-border] rounded-lg max-h-40 overflow-y-auto bg-white">
+          {filtered.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onChange([...selectedIds, t.id])}
+              className="w-full text-left text-sm px-3 py-1.5 hover:bg-[--k-surface-2] transition"
+            >
+              + {t.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ----- Serialisation -----
 
 function serializePayload(f: FormState) {
   return {
