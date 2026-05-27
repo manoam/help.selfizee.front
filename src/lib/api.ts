@@ -37,17 +37,82 @@ export type Post = {
   slug: string;
   resume: string | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  isFavourite?: boolean;
   publishedAt: string | null;
+};
+
+export type PostCategoryRel = {
+  id?: number;
+  categoryId: number;
+  subCategoryId: number | null;
+  subSubCategoryId: number | null;
+  category?: { id: number; nom: string; slug: string };
+  subCategory?: { id: number; nom: string; slug: string } | null;
+  subSubCategory?: { id: number; nom: string; slug: string } | null;
+};
+
+export type PostModelBorneRel = {
+  id?: number;
+  gammeBorneId: number;
+  modelBorneId: number | null;
+  gammeBorne?: { id: number; nom: string };
+  modelBorne?: { id: number; nom: string; version: string | null } | null;
+};
+
+export type PostAttachmentDto = {
+  id: number;
+  filename: string;
+  originalName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  storagePath: string;
+  label: string | null;
+  description: string | null;
 };
 
 export type PostDetail = Post & {
   contenu: unknown;
+  contenuText: string | null;
+  ordre: number | null;
+  descriptionProbleme: string | null;
+  question: string | null;
+  introClient: string | null;
+  noticeClient: string | null;
+  problemeClient: string | null;
+  introCallCenter: string | null;
+  noticeCallCenter: string | null;
+  problemeCallCenter: string | null;
+  introInterne: string | null;
+  problemeInterne: string | null;
   authorKcSub: string | null;
   authorName: string | null;
-  categories: Array<{
-    category: { id: number; nom: string; slug: string };
-    subCategory: { id: number; nom: string; slug: string } | null;
-    subSubCategory: { id: number; nom: string; slug: string } | null;
-  }>;
+  categories: PostCategoryRel[];
   tags: Array<{ tag: { id: number; name: string; slug: string } }>;
+  attachments: PostAttachmentDto[];
+  modelBornes: PostModelBorneRel[];
+  typeProfils: Array<{ typeProfil: { id: number; nom: string; slug: string } }>;
+  relatedTo: Array<{ to: { id: number; titre: string; slug: string } }>;
 };
+
+export type CategoryDto = { id: number; nom: string; slug: string };
+export type SubCategoryDto = {
+  id: number;
+  nom: string;
+  slug: string;
+  categoryId: number;
+};
+export type SubSubCategoryDto = {
+  id: number;
+  nom: string;
+  slug: string;
+  subCategoryId: number;
+};
+export type TagDto = { id: number; name: string; slug: string };
+export type GammeBorneDto = { id: number; nom: string; slug: string };
+export type ModelBorneDto = {
+  id: number;
+  nom: string;
+  version: string | null;
+  gammeBorneId: number;
+};
+export type TypeProfilDto = { id: number; nom: string; slug: string };
