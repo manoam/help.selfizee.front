@@ -4,6 +4,7 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { HomePage } from "./pages/public/HomePage";
 import { PostPage } from "./pages/public/PostPage";
+import { CategoryPage } from "./pages/public/CategoryPage";
 import { CallbackPage } from "./pages/admin/CallbackPage";
 import { DashboardPage } from "./pages/admin/DashboardPage";
 import { PostsListPage } from "./pages/admin/PostsListPage";
@@ -15,6 +16,7 @@ export function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="categorie/:slug" element={<CategoryPage />} />
         <Route path="post/:slug" element={<PostPage />} />
       </Route>
 
