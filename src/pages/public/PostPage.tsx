@@ -15,6 +15,7 @@ import {
 
 import { api, type PostDetail } from "../../lib/api";
 import { RichTextViewer } from "../../components/RichTextViewer";
+import { EmojiVote } from "../../components/public/EmojiVote";
 
 type ViewTab = "client" | "callcenter" | "interne";
 
@@ -225,12 +226,19 @@ export function PostPage() {
           <div className="flex items-center gap-2 flex-wrap mt-6 pt-6 border-t border-[--a-surface-2]">
             <TagIcon className="h-3.5 w-3.5 text-[--a-text-muted]" />
             {post.tags.map(({ tag }) => (
-              <span key={tag.id} className="a-pill text-xs">
+              <Link
+                key={tag.id}
+                to={`/tag/${tag.slug}`}
+                className="a-pill text-xs hover:bg-[--a-surface-3] transition"
+              >
                 {tag.name}
-              </span>
+              </Link>
             ))}
           </div>
         )}
+
+        {/* Vote utilisateur */}
+        <EmojiVote postId={post.id} />
       </div>
 
       {/* Fichiers attachés */}

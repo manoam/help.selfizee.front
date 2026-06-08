@@ -123,15 +123,24 @@ export function CategoryPage() {
         <div className="space-y-3 mb-8">
           {category.subCategories.map((sub) => (
             <div key={sub.id} className="a-card p-5">
-              <h2 className="text-base font-semibold text-[--a-text] mb-1">
+              <Link
+                to={`/sous-categorie/${sub.slug}`}
+                className="text-base font-semibold text-[--a-text] mb-1 hover:text-[--a-accent] transition inline-block"
+              >
                 {sub.nom}
-              </h2>
+                {sub._count?.posts !== undefined &&
+                  sub._count.posts > 0 && (
+                    <span className="ml-2 text-xs text-[--a-text-muted] font-normal">
+                      ({sub._count.posts})
+                    </span>
+                  )}
+              </Link>
               {sub.subSubCategories.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
                   {sub.subSubCategories.map((ssc) => (
                     <Link
                       key={ssc.id}
-                      to={`/categorie/${category.slug}/${sub.slug}/${ssc.slug}`}
+                      to={`/sous-sous-categorie/${ssc.slug}`}
                       className="a-pill hover:bg-[--a-surface-3] justify-between"
                     >
                       <span className="truncate">{ssc.nom}</span>

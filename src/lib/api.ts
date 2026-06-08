@@ -95,6 +95,26 @@ export type PostDetail = Post & {
 };
 
 export type CategoryDto = { id: number; nom: string; slug: string };
+export type SubCategoryWithParent = {
+  id: number;
+  nom: string;
+  slug: string;
+  categoryId: number;
+  category: { id: number; nom: string; slug: string };
+};
+export type SubSubCategoryWithParent = {
+  id: number;
+  nom: string;
+  slug: string;
+  subCategoryId: number;
+  subCategory: SubCategoryWithParent;
+};
+export type TagWithCount = TagDto & { _count?: { posts: number } };
+export type VoteValue = "SAD" | "NEUTRAL" | "HAPPY";
+export type VoteTally = {
+  tally: Record<VoteValue, number>;
+  myVote: VoteValue | null;
+};
 export type SubCategoryDto = {
   id: number;
   nom: string;

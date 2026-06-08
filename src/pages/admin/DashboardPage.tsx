@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Plus, BarChart3, Sparkles } from "lucide-react";
+import { FileText, Plus, BarChart3, Sparkles, Tag as TagIcon } from "lucide-react";
 
 import { useMe } from "../../hooks/useAuth";
 import { api, type Post } from "../../lib/api";
@@ -78,6 +78,13 @@ export function DashboardPage() {
           >
             <FileText className="h-4 w-4" />
             Tous les documents
+          </Link>
+          <Link
+            to="/admin/tags"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+          >
+            <TagIcon className="h-4 w-4" />
+            Gérer les tags
           </Link>
         </div>
       </div>
