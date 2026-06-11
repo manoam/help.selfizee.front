@@ -1,8 +1,40 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-const PLATEFORM_URL =
-  import.meta.env.VITE_PLATEFORM_URL || "https://plateformdev.orkessi.com";
+// Allowlist stricte des origines autorisées à servir le hub Module Federation.
+// Si VITE_PLATEFORM_URL pointe ailleurs, on refuse (RCE protection).
+const ALLOWED_HUB_ORIGINS = new Set([
+  "https://plateformdev.orkessi.com",
+  "https://plateforme.konitys.fr",
+  "https://plateform.konitys.fr",
+]);
+
+const RAW_PLATEFORM_URL =
+  (import.meta.env.VITE_PLATEFORM_URL as string | undefined) ||
+  "https://plateformdev.orkessi.com";
+
+const PLATEFORM_URL = (() => {
+  try {
+    const u = new URL(RAW_PLATEFORM_URL);
+    if (u.protocol !== "https:") {
+      console.error("[remoteLoader] only HTTPS allowed:", u.toString());
+      return null;
+    }
+    if (!ALLOWED_HUB_ORIGINS.has(u.origin)) {
+      console.error(
+        "[remoteLoader] origin not in allowlist:",
+        u.origin,
+        "; allowed:",
+        [...ALLOWED_HUB_ORIGINS],
+      );
+      return null;
+    }
+    return u.origin;
+  } catch {
+    console.error("[remoteLoader] invalid VITE_PLATEFORM_URL:", RAW_PLATEFORM_URL);
+    return null;
+  }
+})();
 
 interface RemoteContainer {
   init: (shareScope: Record<string, unknown>) => void;
@@ -45,11 +77,21 @@ let containerPromise: Promise<RemoteContainer> | null = null;
 function loadRemoteEntry(): Promise<RemoteContainer> {
   if (containerPromise) return containerPromise;
 
+  if (!PLATEFORM_URL) {
+    return Promise.reject(new Error("hub URL not allowed"));
+  }
+
   ensureSharedScope();
 
-  containerPromise = import(
+  // Timeout 5s : si le hub ne répond pas, on fallback au lieu de bloquer 30s.
+  const fetchPromise = import(
     /* @vite-ignore */ `${PLATEFORM_URL}/assets/remoteEntry.js`
-  )
+  );
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("hub load timeout 5s")), 5000),
+  );
+
+  containerPromise = Promise.race([fetchPromise, timeoutPromise])
     .then((container: RemoteContainer) => {
       const g = globalThis as unknown as {
         __federation_shared__?: Record<string, Record<string, unknown>>;

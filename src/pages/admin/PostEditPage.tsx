@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSONContent } from "@tiptap/react";
@@ -113,6 +113,8 @@ export function PostEditPage() {
   const isNew = !id;
   const [form, setForm] = useState<FormState>(emptyState);
   const [tab, setTab] = useState<ViewTab>("client");
+  // Empêche de réécraser le form si un refetch survient pendant que l'utilisateur édite.
+  const formInitializedRef = useRef(false);
 
   const { data: existing } = useQuery({
     queryKey: ["post-edit", id],
@@ -126,6 +128,8 @@ export function PostEditPage() {
 
   useEffect(() => {
     if (!existing) return;
+    if (formInitializedRef.current) return;
+    formInitializedRef.current = true;
     setForm({
       titre: existing.titre,
       slug: existing.slug,
@@ -246,7 +250,11 @@ export function PostEditPage() {
       qc.invalidateQueries({ queryKey: ["posts"] });
       qc.invalidateQueries({ queryKey: ["post-edit"] });
       if (args.stayOnPage) {
-        if (isNew) navigate(`/admin/posts/${saved.id}`, { replace: true });
+        if (isNew && saved?.id) {
+          // Marque le form comme initialisé pour bloquer le useEffect d'init.
+          formInitializedRef.current = true;
+          navigate(`/admin/posts/${saved.id}`, { replace: true });
+        }
       } else {
         navigate("/admin/posts");
       }

@@ -23,10 +23,10 @@ export function AttachmentsManager({ postId }: { postId: number }) {
   const { data: list = [] } = useQuery({
     queryKey: ["post-attachments", postId],
     queryFn: async () => {
-      const { data } = await api.get<{ attachments: PostAttachmentDto[] }>(
-        `/posts/by-id/${postId}`,
+      const { data } = await api.get<PostAttachmentDto[]>(
+        `/attachments/by-post/${postId}`,
       );
-      return data.attachments;
+      return data;
     },
   });
 
@@ -106,7 +106,7 @@ export function AttachmentsManager({ postId }: { postId: number }) {
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                   <a
-                    href={`/api/attachments/${att.id}/download`}
+                    href={`${api.defaults.baseURL ?? ""}/attachments/${att.id}/download`}
                     className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-primary] hover:bg-[--k-primary-2] transition"
                     title="Télécharger"
                   >

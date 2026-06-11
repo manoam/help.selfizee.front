@@ -51,10 +51,12 @@ export function CategoryPage() {
   });
 
   const { data: posts = [] } = useQuery({
-    queryKey: ["posts", "by-category", category?.id],
+    queryKey: ["posts", "by-category-direct", category?.id],
     queryFn: async () => {
+      // directOnly=1 : on ne récupère que les posts DIRECTEMENT attachés à la cat
+      // (sans sous-cat), pour éviter la duplication avec la nav par sous-cat.
       const { data } = await api.get<PublicPost[]>(
-        `/posts?categoryId=${category!.id}`,
+        `/posts?categoryId=${category!.id}&directOnly=1`,
       );
       return data;
     },

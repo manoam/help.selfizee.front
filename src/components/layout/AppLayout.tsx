@@ -89,14 +89,25 @@ const SIDEBAR_SECTIONS = [
   },
 ];
 
+// Wrappe `useAuth()` ou un stub selon AUTH_DISABLED.
+// On split en 2 composants pour respecter les Rules of Hooks : useAuth() ne
+// doit jamais être appelé conditionnellement dans le même composant.
+function useSignoutRedirect(): () => Promise<void> {
+  const auth = useAuth();
+  return () => auth.signoutRedirect();
+}
+function useSignoutRedirectStub(): () => Promise<void> {
+  return () => Promise.resolve();
+}
+const useSignout = AUTH_DISABLED
+  ? useSignoutRedirectStub
+  : useSignoutRedirect;
+
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: me } = useMe();
-  // useAuth() ne peut être appelé que si AuthProvider est monté (donc auth activée).
-  const oidc = AUTH_DISABLED
-    ? { signoutRedirect: () => Promise.resolve() }
-    : useAuth();
+  const signout = useSignout();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
@@ -128,8 +139,7 @@ export default function AppLayout() {
     : null;
 
   const handleLogout = () => {
-    if (AUTH_DISABLED) return;
-    void oidc.signoutRedirect();
+    void signout();
   };
 
   return (

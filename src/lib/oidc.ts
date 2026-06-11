@@ -22,7 +22,9 @@ export const oidcConfig: AuthProviderProps = {
   response_type: "code",
   scope: "openid profile email",
   automaticSilentRenew: true,
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
+  // sessionStorage au lieu de localStorage : le token disparaît à la fermeture
+  // du tab, ce qui limite la fenêtre d'attaque en cas de XSS résiduel.
+  userStore: new WebStorageStateStore({ store: window.sessionStorage }),
   // Nettoie le `?code=...&state=...` après le callback OIDC
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, "/admin");

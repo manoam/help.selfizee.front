@@ -28,10 +28,10 @@ export function HomePage() {
   });
 
   const { data: favourites = [] } = useQuery({
-    queryKey: ["posts", "favourites"],
+    queryKey: ["posts", "favourite-only"],
     queryFn: async () => {
-      const { data } = await api.get<Post[]>("/posts");
-      return data.filter((p) => p.isFavourite);
+      const { data } = await api.get<Post[]>("/posts?favourite=1");
+      return data;
     },
   });
 

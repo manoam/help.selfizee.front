@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -16,6 +16,7 @@ import {
 import { api, type PostDetail } from "../../lib/api";
 import { RichTextViewer } from "../../components/RichTextViewer";
 import { EmojiVote } from "../../components/public/EmojiVote";
+import { safeHtml } from "../../lib/sanitize";
 
 type ViewTab = "client" | "callcenter" | "interne";
 
@@ -48,13 +49,21 @@ export function PostPage() {
       post.problemeCallCenter
     )
       v.push("callcenter");
-    // Vue interne : on a toujours le `contenu` (TipTap) + intro/probleme.
-    if (post.contenu || post.introInterne || post.problemeInterne)
-      v.push("interne");
+    // Vue interne : on a contenu TipTap (sauf si {} vide) OU intro/probleme.
+    const hasTiptap =
+      post.contenu &&
+      typeof post.contenu === "object" &&
+      (post.contenu as { content?: unknown[] }).content !== undefined &&
+      ((post.contenu as { content?: unknown[] }).content?.length ?? 0) > 0;
+    if (hasTiptap || post.introInterne || post.problemeInterne) v.push("interne");
     return v;
   }, [post]);
 
   const [tab, setTab] = useState<ViewTab | null>(null);
+  // Reset l'onglet quand on change de post (sinon onglet fantôme actif).
+  useEffect(() => {
+    setTab(null);
+  }, [slug]);
   const activeTab = tab ?? availableViews[0] ?? null;
 
   if (isLoading) {
@@ -158,7 +167,7 @@ export function PostPage() {
               <AlertCircle className="h-4 w-4 text-[--a-accent] mt-1 shrink-0" />
               <div
                 className="a-html-content flex-1"
-                dangerouslySetInnerHTML={{ __html: post.descriptionProbleme }}
+                dangerouslySetInnerHTML={{ __html: safeHtml(post.descriptionProbleme) }}
               />
             </div>
           </div>
@@ -216,7 +225,7 @@ export function PostPage() {
             </h3>
             <div
               className="a-html-content"
-              dangerouslySetInnerHTML={{ __html: post.question }}
+              dangerouslySetInnerHTML={{ __html: safeHtml(post.question) }}
             />
           </div>
         )}
@@ -266,7 +275,7 @@ export function PostPage() {
                   )}
                 </div>
                 <a
-                  href={`/api/attachments/${att.id}/download`}
+                  href={`${api.defaults.baseURL ?? ""}/public-attachments/${att.id}/download`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--a-accent] border border-[--a-accent-border] bg-[--a-accent-soft] rounded-full hover:brightness-95 transition"
                 >
                   <Download className="h-3 w-3" />
@@ -329,7 +338,7 @@ function ViewContent({
           </h3>
           <div
             className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: intro }}
+            dangerouslySetInnerHTML={{ __html: safeHtml(intro) }}
           />
         </section>
       )}
@@ -340,7 +349,7 @@ function ViewContent({
           </h3>
           <div
             className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: contenu }}
+            dangerouslySetInnerHTML={{ __html: safeHtml(contenu) }}
           />
         </section>
       )}
@@ -361,7 +370,7 @@ function ViewContent({
           </h3>
           <div
             className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: probleme }}
+            dangerouslySetInnerHTML={{ __html: safeHtml(probleme) }}
           />
         </section>
       )}
