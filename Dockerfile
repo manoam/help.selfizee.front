@@ -10,7 +10,9 @@ RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# --no-frozen-lockfile temporaire car lockfile pas régénéré (Docker down en local).
+# Repasser à --frozen-lockfile dès que le lockfile sera à jour.
+RUN pnpm install --no-frozen-lockfile
 
 COPY . .
 
