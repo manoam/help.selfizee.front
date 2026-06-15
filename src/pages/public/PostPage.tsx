@@ -325,10 +325,11 @@ function ViewContent({
   contenuTipTap?: unknown;
   probleme?: string | null;
 }) {
-  const hasTiptapContent =
+  const hasTiptapContent = Boolean(
     contenuTipTap &&
-    typeof contenuTipTap === "object" &&
-    !Array.isArray(contenuTipTap);
+      typeof contenuTipTap === "object" &&
+      !Array.isArray(contenuTipTap),
+  );
   return (
     <div className="space-y-6">
       {intro && (
