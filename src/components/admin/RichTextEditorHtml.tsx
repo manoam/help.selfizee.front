@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, Extension } from "@tiptap/react";
 import { useRef, useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -39,6 +39,30 @@ const MESSAGE_LABEL: Record<MessageType, string> = {
   attention: "Attention (rouge)",
 };
 
+// Extension TipTap qui ajoute l'attribut data-block-token aux paragraphes
+// (sinon StarterKit le strippe). Permet de stocker un UUID qui pointe vers
+// le HTML brut d'un bloc CRM (accordéon / message) gardé hors de TipTap.
+const BlockTokenAttr = Extension.create({
+  name: "blockTokenAttr",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["paragraph"],
+        attributes: {
+          "data-block-token": {
+            default: null,
+            parseHTML: (el) => el.getAttribute("data-block-token"),
+            renderHTML: (attrs) => {
+              if (!attrs["data-block-token"]) return {};
+              return { "data-block-token": attrs["data-block-token"] };
+            },
+          },
+        },
+      },
+    ];
+  },
+});
+
 type Props = {
   value: string | null;
   onChange: (html: string) => void;
@@ -72,9 +96,28 @@ export function RichTextEditorHtml({
   const [msgType, setMsgType] = useState<MessageType>("info");
   const [msgContent, setMsgContent] = useState("");
 
+  // Store HTML brut pour les blocs CRM (accordéon, messages). TipTap stripperait
+  // leurs classes au save -> on insère un token unique <p>{{BLOCK:UUID}}</p>
+  // dans l'éditeur, et on substitue les tokens par le HTML brut au moment du
+  // onChange.
+  const blocksRef = useRef<Map<string, string>>(new Map());
+
+  // Re-injecte les blocs depuis le HTML d'entrée (au load du composant) pour
+  // que le contenu existant (ex: post legacy avec des accordéons déjà saisis)
+  // s'affiche correctement dans l'éditeur en repassant par les tokens.
+  const initialContent = useRef<string | null>(null);
+  if (initialContent.current === null) {
+    const { html: stubbed, blocks } = extractBlocks(value ?? "");
+    blocksRef.current = blocks;
+    initialContent.current = stubbed;
+  }
+
   const editor = useEditor({
     extensions: [
       StarterKit,
+      // Extension qui ajoute l'attribut `data-block-token` aux paragraphes,
+      // pour préserver les tokens de blocs CRM (accordéon, message).
+      BlockTokenAttr,
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({
         openOnClick: false,
@@ -86,9 +129,9 @@ export function RichTextEditorHtml({
       TableCell,
       TableHeader,
     ],
-    content: value ?? "",
+    content: initialContent.current ?? "",
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
+      onChange(reinjectBlocks(editor.getHTML(), blocksRef.current));
     },
   });
 
@@ -133,6 +176,21 @@ export function RichTextEditorHtml({
       .run();
   };
 
+  // Insère un token <p>[[BLOCK:UUID]]</p> dans l'éditeur. Le vrai HTML
+  // est stocké dans blocksRef et remappé au save (cf. reinjectBlocks).
+  const insertHtmlBlock = (html: string, label: string) => {
+    const uid =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    blocksRef.current.set(uid, html);
+    editor
+      .chain()
+      .focus()
+      .insertContent(`<p data-block-token="${uid}">${escapeHtmlAttr(label)}</p>`)
+      .run();
+  };
+
   // Reproduit la structure HTML exacte du plugin TinyMCE bootstrapaccordion.
   const insertAccordion = () => {
     if (!accTitle.trim()) return;
@@ -148,8 +206,8 @@ export function RichTextEditorHtml({
       `<div id="collapse-${ts}" class="panel-collapse collapse" role="tabpanel">` +
       `<div class="panel-body bootstrap-accordion-content">` +
       `${accContent || "&nbsp;"}` +
-      `</div></div></div><p></p>`;
-    editor.chain().focus().insertContent(html).run();
+      `</div></div></div>`;
+    insertHtmlBlock(html, `▸ Accordéon : ${accTitle}`);
     setAccTitle("");
     setAccContent("");
     setAccOpen(false);
@@ -158,9 +216,13 @@ export function RichTextEditorHtml({
   // Reproduit la structure du plugin TinyMCE messages.
   const insertMessage = () => {
     if (!msgContent.trim()) return;
-    const html =
-      `<div class="${msgType}">${escapeHtmlAttr(msgContent)}</div><p></p>`;
-    editor.chain().focus().insertContent(html).run();
+    const html = `<div class="${msgType}">${escapeHtmlAttr(msgContent)}</div>`;
+    const labelMap: Record<MessageType, string> = {
+      info: "ℹ️ Info",
+      note: "🔵 À noter",
+      attention: "⚠️ Attention",
+    };
+    insertHtmlBlock(html, `${labelMap[msgType]} : ${msgContent}`);
     setMsgContent("");
     setMsgOpen(false);
   };
@@ -428,6 +490,73 @@ function escapeHtmlAttr(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+// Parcourt le HTML entrant, extrait les blocs CRM (accordéon, info/note/attention)
+// vers une Map UUID -> HTML, et remplace dans le HTML par des paragraphes-token
+// que TipTap pourra afficher sans casser leurs classes.
+function extractBlocks(html: string): {
+  html: string;
+  blocks: Map<string, string>;
+} {
+  const blocks = new Map<string, string>();
+  if (typeof window === "undefined" || !html) {
+    return { html, blocks };
+  }
+  const wrap = document.createElement("div");
+  wrap.innerHTML = html;
+
+  // Sélecteurs des blocs CRM à extraire.
+  const SELECTORS = ".bootstrap-accordion, div.info, div.note, div.attention";
+  const matches = Array.from(wrap.querySelectorAll(SELECTORS));
+  for (const el of matches) {
+    // Skip les éléments imbriqués (déjà capturés par le parent).
+    if (el.parentElement?.closest(SELECTORS)) continue;
+    const uid =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    blocks.set(uid, el.outerHTML);
+    const label = labelForBlock(el as HTMLElement);
+    const placeholder = document.createElement("p");
+    placeholder.setAttribute("data-block-token", uid);
+    placeholder.textContent = label;
+    el.replaceWith(placeholder);
+  }
+  return { html: wrap.innerHTML, blocks };
+}
+
+function labelForBlock(el: HTMLElement): string {
+  if (el.classList.contains("bootstrap-accordion")) {
+    const title =
+      el.querySelector(".bootstrap-accordion-title")?.textContent?.trim() ?? "";
+    return `▸ Accordéon : ${title || "(sans titre)"}`;
+  }
+  if (el.classList.contains("info")) return `ℹ️ Info : ${el.textContent?.trim() ?? ""}`;
+  if (el.classList.contains("note")) return `🔵 À noter : ${el.textContent?.trim() ?? ""}`;
+  if (el.classList.contains("attention"))
+    return `⚠️ Attention : ${el.textContent?.trim() ?? ""}`;
+  return "[bloc]";
+}
+
+// Inverse d'extractBlocks : remplace les <p data-block-token="UUID"> par leur
+// HTML d'origine au moment du save.
+function reinjectBlocks(html: string, blocks: Map<string, string>): string {
+  if (!blocks.size || typeof window === "undefined") return html;
+  const wrap = document.createElement("div");
+  wrap.innerHTML = html;
+  const tokens = Array.from(wrap.querySelectorAll("[data-block-token]"));
+  for (const t of tokens) {
+    const uid = t.getAttribute("data-block-token");
+    if (!uid) continue;
+    const raw = blocks.get(uid);
+    if (!raw) continue;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = raw;
+    const replacement = tmp.firstElementChild;
+    if (replacement) t.replaceWith(replacement);
+  }
+  return wrap.innerHTML;
 }
 
 function ToolBtn({

@@ -49,7 +49,7 @@ export function Modal({
         </div>
         <div className="p-5 overflow-y-auto flex-1">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-[--k-border]">
+          <div className="shrink-0 flex flex-wrap items-center justify-end gap-2 px-5 py-3 border-t border-[--k-border] bg-white rounded-b-xl">
             {footer}
           </div>
         )}

@@ -313,6 +313,24 @@ select.input-field {
   line-height: 20px;
 }
 
+/* Tokens placeholders pour les blocs CRM (accordéon, message) dans l'éditeur.
+   Visuel propre, non éditable inline. Le HTML d'origine est ré-injecté au save. */
+.ProseMirror p[data-block-token] {
+  display: block;
+  background: #fef3c7;
+  border: 1px dashed #f59e0b;
+  color: #78350f;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+  font-size: 13px;
+  font-style: italic;
+  cursor: pointer;
+}
+.ProseMirror p[data-block-token]::before {
+  content: "";
+}
+
 /* RichTextEditorHtml (admin) : retire le contour bleu du contenteditable
    ProseMirror. Le wrapper parent gere deja la bordure focus. */
 .tiptap-noring .ProseMirror,
