@@ -34,6 +34,7 @@ import {
   type TypeProfilDto,
 } from "../../lib/api";
 import { RichTextEditor } from "../../components/RichTextEditor";
+import { RichTextEditorHtml } from "../../components/admin/RichTextEditorHtml";
 import { AttachmentsManager } from "../../components/admin/AttachmentsManager";
 import { RelatedPostsPicker } from "../../components/admin/RelatedPostsPicker";
 
@@ -378,14 +379,11 @@ export function PostEditPage() {
               </Field>
             </div>
             <Field label="Description du problème">
-              <textarea
-                className="input-field"
-                rows={4}
+              <RichTextEditorHtml
                 value={form.descriptionProbleme}
-                onChange={(e) =>
-                  updateForm("descriptionProbleme", e.target.value)
-                }
+                onChange={(html) => updateForm("descriptionProbleme", html)}
                 placeholder="Quel est le problème adressé par ce document ?"
+                minHeight={120}
               />
             </Field>
           </Card>
@@ -427,14 +425,12 @@ export function PostEditPage() {
             {tab === "interne" && (
               <div className="space-y-4">
                 <Field label="Intro">
-                  <textarea
-                    className="input-field"
-                    rows={5}
+                  <RichTextEditorHtml
                     value={form.vueInterne.intro}
-                    onChange={(e) =>
+                    onChange={(html) =>
                       updateForm("vueInterne", {
                         ...form.vueInterne,
-                        intro: e.target.value,
+                        intro: html,
                       })
                     }
                   />
@@ -457,14 +453,12 @@ export function PostEditPage() {
                   </div>
                 </Field>
                 <Field label="Problème">
-                  <textarea
-                    className="input-field"
-                    rows={5}
+                  <RichTextEditorHtml
                     value={form.vueInterne.probleme}
-                    onChange={(e) =>
+                    onChange={(html) =>
                       updateForm("vueInterne", {
                         ...form.vueInterne,
-                        probleme: e.target.value,
+                        probleme: html,
                       })
                     }
                   />
@@ -474,12 +468,11 @@ export function PostEditPage() {
           </Card>
 
           <Card icon={HelpCircle} title="Questions">
-            <textarea
-              className="input-field"
-              rows={4}
+            <RichTextEditorHtml
               value={form.question}
-              onChange={(e) => updateForm("question", e.target.value)}
+              onChange={(html) => updateForm("question", html)}
               placeholder="Questions fréquemment associées à ce document"
+              minHeight={120}
             />
           </Card>
 
@@ -861,27 +854,24 @@ function ViewFields({
   return (
     <div className="space-y-4">
       <Field label="Intro">
-        <textarea
-          className="input-field"
-          rows={5}
+        <RichTextEditorHtml
           value={value.intro}
-          onChange={(e) => onChange({ ...value, intro: e.target.value })}
+          onChange={(html) => onChange({ ...value, intro: html })}
+          minHeight={140}
         />
       </Field>
       <Field label="Contenu">
-        <textarea
-          className="input-field"
-          rows={10}
+        <RichTextEditorHtml
           value={value.notice}
-          onChange={(e) => onChange({ ...value, notice: e.target.value })}
+          onChange={(html) => onChange({ ...value, notice: html })}
+          minHeight={260}
         />
       </Field>
       <Field label="Problème">
-        <textarea
-          className="input-field"
-          rows={5}
+        <RichTextEditorHtml
           value={value.probleme}
-          onChange={(e) => onChange({ ...value, probleme: e.target.value })}
+          onChange={(html) => onChange({ ...value, probleme: html })}
+          minHeight={140}
         />
       </Field>
     </div>
