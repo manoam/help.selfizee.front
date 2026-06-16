@@ -10,6 +10,21 @@ import { AUTH_DISABLED } from "./lib/authConfig";
 import { AuthBridge } from "./components/AuthBridge";
 import "./index.css";
 
+// Délégation globale pour les accordéons (reproduit le data-toggle Bootstrap
+// du WYSIWYG CRM sans dépendre de Bootstrap JS). Toggle .in sur .panel-collapse.
+document.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement | null;
+  if (!target) return;
+  const trigger = target.closest<HTMLElement>(".bootstrap-accordion-title");
+  if (!trigger) return;
+  e.preventDefault();
+  const href = trigger.getAttribute("href");
+  if (!href || !href.startsWith("#")) return;
+  const panel = document.getElementById(href.slice(1));
+  if (!panel) return;
+  panel.classList.toggle("in");
+});
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30_000, refetchOnWindowFocus: false },

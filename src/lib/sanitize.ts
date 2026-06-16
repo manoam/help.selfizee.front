@@ -19,6 +19,8 @@ const ALLOWED_ATTR = [
   "colspan", "rowspan",
   "class", "id",
   "style",
+  // Attributs utilisés par les accordéons (plugin bootstrapaccordion CRM).
+  "role", "data-toggle", "data-parent",
 ];
 
 export function safeHtml(html: string | null | undefined): string {

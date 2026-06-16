@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -23,10 +23,21 @@ import {
   Redo,
   Loader2,
   Strikethrough,
+  ChevronsUpDown,
+  MessageSquare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { api } from "../../lib/api";
+import { Modal } from "./Modal";
+
+type MessageType = "info" | "note" | "attention";
+
+const MESSAGE_LABEL: Record<MessageType, string> = {
+  info: "Info (jaune)",
+  note: "À noter (bleu)",
+  attention: "Attention (rouge)",
+};
 
 type Props = {
   value: string | null;
@@ -50,6 +61,16 @@ export function RichTextEditorHtml({
 }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const uploadingRef = useRef(false);
+
+  // Modals locaux : accordéon + message (reproduisent les plugins
+  // bootstrapaccordion et messages du TinyMCE CRM original).
+  const [accOpen, setAccOpen] = useState(false);
+  const [accTitle, setAccTitle] = useState("");
+  const [accContent, setAccContent] = useState("");
+
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgType, setMsgType] = useState<MessageType>("info");
+  const [msgContent, setMsgContent] = useState("");
 
   const editor = useEditor({
     extensions: [
@@ -110,6 +131,38 @@ export function RichTextEditorHtml({
       .focus()
       .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
       .run();
+  };
+
+  // Reproduit la structure HTML exacte du plugin TinyMCE bootstrapaccordion.
+  const insertAccordion = () => {
+    if (!accTitle.trim()) return;
+    const ts = String(Math.floor(Math.random() * 1e10));
+    const title = escapeHtmlAttr(accTitle);
+    const html =
+      `<div class="panel panel-default bootstrap-accordion">` +
+      `<div class="panel-heading" role="tab" id="heading-${ts}">` +
+      `<h4 class="panel-title">` +
+      `<a role="button" class="bootstrap-accordion-title" data-toggle="collapse" data-parent="#accordion" href="#collapse-${ts}">` +
+      `${title}` +
+      `</a></h4></div>` +
+      `<div id="collapse-${ts}" class="panel-collapse collapse" role="tabpanel">` +
+      `<div class="panel-body bootstrap-accordion-content">` +
+      `${accContent || "&nbsp;"}` +
+      `</div></div></div><p></p>`;
+    editor.chain().focus().insertContent(html).run();
+    setAccTitle("");
+    setAccContent("");
+    setAccOpen(false);
+  };
+
+  // Reproduit la structure du plugin TinyMCE messages.
+  const insertMessage = () => {
+    if (!msgContent.trim()) return;
+    const html =
+      `<div class="${msgType}">${escapeHtmlAttr(msgContent)}</div><p></p>`;
+    editor.chain().focus().insertContent(html).run();
+    setMsgContent("");
+    setMsgOpen(false);
   };
 
   return (
@@ -190,6 +243,17 @@ export function RichTextEditorHtml({
         <ToolBtn icon={TableIcon} onClick={insertTable} title="Insérer un tableau" />
         <Separator />
         <ToolBtn
+          icon={ChevronsUpDown}
+          onClick={() => setAccOpen(true)}
+          title="Insérer un accordéon"
+        />
+        <ToolBtn
+          icon={MessageSquare}
+          onClick={() => setMsgOpen(true)}
+          title="Insérer un message (info / note / attention)"
+        />
+        <Separator />
+        <ToolBtn
           icon={Undo}
           onClick={() => editor.chain().focus().undo().run()}
           title="Annuler"
@@ -240,8 +304,130 @@ export function RichTextEditorHtml({
           {placeholder}
         </div>
       )}
+
+      {/* Dialog Accordéon (reproduit plugin TinyMCE bootstrapaccordion). */}
+      <Modal
+        open={accOpen}
+        onClose={() => setAccOpen(false)}
+        title="Ajouter un accordéon"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setAccOpen(false)}
+              className="px-3 py-1.5 text-sm text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={insertAccordion}
+              disabled={!accTitle.trim()}
+              className="px-3 py-1.5 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+            >
+              Insérer
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+              Titre
+            </label>
+            <input
+              className="input-field"
+              value={accTitle}
+              onChange={(e) => setAccTitle(e.target.value)}
+              placeholder="Titre de l'accordéon"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+              Contenu
+            </label>
+            <textarea
+              className="input-field"
+              rows={5}
+              value={accContent}
+              onChange={(e) => setAccContent(e.target.value)}
+              placeholder="Contenu de l'accordéon"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Dialog Message (reproduit plugin TinyMCE messages). */}
+      <Modal
+        open={msgOpen}
+        onClose={() => setMsgOpen(false)}
+        title="Ajouter un message"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setMsgOpen(false)}
+              className="px-3 py-1.5 text-sm text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={insertMessage}
+              disabled={!msgContent.trim()}
+              className="px-3 py-1.5 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+            >
+              Insérer
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+              Type
+            </label>
+            <select
+              className="input-field"
+              value={msgType}
+              onChange={(e) => setMsgType(e.target.value as MessageType)}
+            >
+              {(Object.keys(MESSAGE_LABEL) as MessageType[]).map((t) => (
+                <option key={t} value={t}>
+                  {MESSAGE_LABEL[t]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+              Contenu
+            </label>
+            <textarea
+              className="input-field"
+              rows={4}
+              value={msgContent}
+              onChange={(e) => setMsgContent(e.target.value)}
+              placeholder="Texte du message"
+              autoFocus
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
+}
+
+// Échappe les caractères dangereux pour insertion dans un attribut/HTML inline.
+// Le back DOMPurify sanitize au save, mais on évite déjà ici les soucis évidents.
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function ToolBtn({

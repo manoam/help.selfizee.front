@@ -245,6 +245,74 @@ select.input-field {
   }
 }
 
+/* Reproduction des classes custom du WYSIWYG CRM (TinyMCE plugins
+   bootstrapaccordion + messages). Visible côté admin (éditeur) ET public
+   (PostPage / a-html-content). Repris fidèlement de webroot/css/tinymce_personalized.css. */
+.bootstrap-accordion {
+  margin-bottom: 15px;
+}
+.bootstrap-accordion .panel-heading {
+  background: #f1f2f1;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+}
+.bootstrap-accordion .panel-title {
+  margin: 10px;
+  width: 90%;
+}
+.bootstrap-accordion .bootstrap-accordion-title {
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+}
+.bootstrap-accordion .panel-collapse {
+  padding: 35px;
+  background-color: #f1f1f1;
+}
+.bootstrap-accordion .panel-collapse.collapse:not(.in) {
+  display: none;
+}
+.bootstrap-accordion-content h1 { font-size: 20px; }
+.bootstrap-accordion-content h2 { font-size: 18px; }
+.bootstrap-accordion-content h3 { font-size: 16px; }
+.bootstrap-accordion-content h4 { font-size: 14px; }
+.bootstrap-accordion-content h5 { font-size: 12px; }
+.bootstrap-accordion-content h6 { font-size: 10px; }
+
+.attention {
+  background: #FDDCD0;
+  color: #E0182D;
+  border: 1px solid #FBB1A1;
+  padding: 16px;
+  border-radius: 4px;
+  margin: 10px 0 25px;
+  font-size: 16px;
+  line-height: 20px;
+}
+.note {
+  background: #D6F0FF;
+  color: #051259;
+  border: 1px solid #ADDEFF;
+  padding: 16px;
+  border-radius: 4px;
+  margin: 10px 0 25px;
+  font-size: 16px;
+  line-height: 20px;
+}
+.info {
+  background: #FFF2CC;
+  color: #7A3400;
+  border: 1px solid #FFE299;
+  padding: 20px;
+  border-radius: 4px;
+  margin: 10px 0 25px;
+  font-size: 16px;
+  line-height: 20px;
+}
+
 /* RichTextEditorHtml (admin) : retire le contour bleu du contenteditable
    ProseMirror. Le wrapper parent gere deja la bordure focus. */
 .tiptap-noring .ProseMirror,
