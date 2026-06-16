@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, Extension } from "@tiptap/react";
+import { useEditor, EditorContent } from "@tiptap/react";
 import { useRef, useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -7,6 +7,8 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
+
+import { HtmlBlock } from "./HtmlBlockExtension";
 import {
   Bold,
   Italic,
@@ -39,38 +41,6 @@ const MESSAGE_LABEL: Record<MessageType, string> = {
   attention: "Attention (rouge)",
 };
 
-// Extension TipTap qui ajoute les attributs data-block-token + data-block-kind
-// aux paragraphes (sinon StarterKit les strippe). Permet de stocker un UUID
-// qui pointe vers le HTML brut d'un bloc CRM gardé hors de TipTap, et le
-// kind sert au styling du placeholder.
-const BlockTokenAttr = Extension.create({
-  name: "blockTokenAttr",
-  addGlobalAttributes() {
-    return [
-      {
-        types: ["paragraph"],
-        attributes: {
-          "data-block-token": {
-            default: null,
-            parseHTML: (el) => el.getAttribute("data-block-token"),
-            renderHTML: (attrs) => {
-              if (!attrs["data-block-token"]) return {};
-              return { "data-block-token": attrs["data-block-token"] };
-            },
-          },
-          "data-block-kind": {
-            default: null,
-            parseHTML: (el) => el.getAttribute("data-block-kind"),
-            renderHTML: (attrs) => {
-              if (!attrs["data-block-kind"]) return {};
-              return { "data-block-kind": attrs["data-block-kind"] };
-            },
-          },
-        },
-      },
-    ];
-  },
-});
 
 type Props = {
   value: string | null;
@@ -105,28 +75,12 @@ export function RichTextEditorHtml({
   const [msgType, setMsgType] = useState<MessageType>("info");
   const [msgContent, setMsgContent] = useState("");
 
-  // Store HTML brut pour les blocs CRM (accordéon, messages). TipTap stripperait
-  // leurs classes au save -> on insère un token unique <p>{{BLOCK:UUID}}</p>
-  // dans l'éditeur, et on substitue les tokens par le HTML brut au moment du
-  // onChange.
-  const blocksRef = useRef<Map<string, string>>(new Map());
-
-  // Re-injecte les blocs depuis le HTML d'entrée (au load du composant) pour
-  // que le contenu existant (ex: post legacy avec des accordéons déjà saisis)
-  // s'affiche correctement dans l'éditeur en repassant par les tokens.
-  const initialContent = useRef<string | null>(null);
-  if (initialContent.current === null) {
-    const { html: stubbed, blocks } = extractBlocks(value ?? "");
-    blocksRef.current = blocks;
-    initialContent.current = stubbed;
-  }
-
   const editor = useEditor({
     extensions: [
       StarterKit,
-      // Extension qui ajoute l'attribut `data-block-token` aux paragraphes,
-      // pour préserver les tokens de blocs CRM (accordéon, message).
-      BlockTokenAttr,
+      // Extension custom : blocs HTML CRM (accordéon, info, note, attention)
+      // rendus tels quels dans l'éditeur via NodeView (vrai rendu, pas placeholder).
+      HtmlBlock,
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({
         openOnClick: false,
@@ -138,9 +92,11 @@ export function RichTextEditorHtml({
       TableCell,
       TableHeader,
     ],
-    content: initialContent.current ?? "",
+    content: value ?? "",
     onUpdate({ editor }) {
-      onChange(reinjectBlocks(editor.getHTML(), blocksRef.current));
+      // Post-traite le HTML : remplace les wrappers <div data-html-content>
+      // par le HTML brut décodé (le vrai accordéon, message, etc.).
+      onChange(rehydrateBlocks(editor.getHTML()));
     },
   });
 
@@ -185,23 +141,17 @@ export function RichTextEditorHtml({
       .run();
   };
 
-  // Insère un token <p>[[BLOCK:UUID]]</p> dans l'éditeur. Le vrai HTML
-  // est stocké dans blocksRef et remappé au save (cf. reinjectBlocks).
-  // kind sert juste au style du placeholder dans l'éditeur (couleur).
-  const insertHtmlBlock = (html: string, label: string, kind: string) => {
-    const uid =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    blocksRef.current.set(uid, html);
-    // Insère le token + un paragraphe vide après (pour que le curseur ait
-    // toujours où aller). On focus la position juste après le bloc.
+  // Insère un node htmlBlock avec le HTML brut. Le NodeView le rend dans
+  // l'éditeur tel qu'il sera côté public. Ajoute aussi un paragraphe vide
+  // après pour permettre la suite de la frappe.
+  const insertHtmlBlock = (html: string, kind: string) => {
     editor
       .chain()
       .focus()
-      .insertContent(
-        `<p data-block-token="${uid}" data-block-kind="${kind}">${escapeHtmlAttr(label)}</p><p></p>`,
-      )
+      .insertContent([
+        { type: "htmlBlock", attrs: { html, kind } },
+        { type: "paragraph" },
+      ])
       .run();
   };
 
@@ -221,7 +171,7 @@ export function RichTextEditorHtml({
       `<div class="panel-body bootstrap-accordion-content">` +
       `${accContent || "&nbsp;"}` +
       `</div></div></div>`;
-    insertHtmlBlock(html, `▸ Accordéon : ${accTitle}`, "accordion");
+    insertHtmlBlock(html, "accordion");
     setAccTitle("");
     setAccContent("");
     setAccOpen(false);
@@ -231,12 +181,7 @@ export function RichTextEditorHtml({
   const insertMessage = () => {
     if (!msgContent.trim()) return;
     const html = `<div class="${msgType}">${escapeHtmlAttr(msgContent)}</div>`;
-    const labelMap: Record<MessageType, string> = {
-      info: "ℹ️ Info",
-      note: "🔵 À noter",
-      attention: "⚠️ Attention",
-    };
-    insertHtmlBlock(html, `${labelMap[msgType]} : ${msgContent}`, msgType);
+    insertHtmlBlock(html, msgType);
     setMsgContent("");
     setMsgOpen(false);
   };
@@ -506,79 +451,31 @@ function escapeHtmlAttr(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// Parcourt le HTML entrant, extrait les blocs CRM (accordéon, info/note/attention)
-// vers une Map UUID -> HTML, et remplace dans le HTML par des paragraphes-token
-// que TipTap pourra afficher sans casser leurs classes.
-function extractBlocks(html: string): {
-  html: string;
-  blocks: Map<string, string>;
-} {
-  const blocks = new Map<string, string>();
-  if (typeof window === "undefined" || !html) {
-    return { html, blocks };
-  }
+// Post-traite le HTML produit par TipTap pour remplacer les wrappers
+// <div data-html-content="..."> (générés par renderHTML de HtmlBlock)
+// par le HTML brut décodé.
+function rehydrateBlocks(html: string): string {
+  if (typeof window === "undefined" || !html) return html;
   const wrap = document.createElement("div");
   wrap.innerHTML = html;
-
-  // Sélecteurs des blocs CRM à extraire.
-  const SELECTORS = ".bootstrap-accordion, div.info, div.note, div.attention";
-  const matches = Array.from(wrap.querySelectorAll(SELECTORS));
-  for (const el of matches) {
-    // Skip les éléments imbriqués (déjà capturés par le parent).
-    if (el.parentElement?.closest(SELECTORS)) continue;
-    const uid =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    blocks.set(uid, el.outerHTML);
-    const label = labelForBlock(el as HTMLElement);
-    const kind = kindForBlock(el as HTMLElement);
-    const placeholder = document.createElement("p");
-    placeholder.setAttribute("data-block-token", uid);
-    placeholder.setAttribute("data-block-kind", kind);
-    placeholder.textContent = label;
-    el.replaceWith(placeholder);
-  }
-  return { html: wrap.innerHTML, blocks };
-}
-
-function labelForBlock(el: HTMLElement): string {
-  if (el.classList.contains("bootstrap-accordion")) {
-    const title =
-      el.querySelector(".bootstrap-accordion-title")?.textContent?.trim() ?? "";
-    return `▸ Accordéon : ${title || "(sans titre)"}`;
-  }
-  if (el.classList.contains("info")) return `ℹ️ Info : ${el.textContent?.trim() ?? ""}`;
-  if (el.classList.contains("note")) return `🔵 À noter : ${el.textContent?.trim() ?? ""}`;
-  if (el.classList.contains("attention"))
-    return `⚠️ Attention : ${el.textContent?.trim() ?? ""}`;
-  return "[bloc]";
-}
-
-function kindForBlock(el: HTMLElement): string {
-  if (el.classList.contains("bootstrap-accordion")) return "accordion";
-  if (el.classList.contains("info")) return "info";
-  if (el.classList.contains("note")) return "note";
-  if (el.classList.contains("attention")) return "attention";
-  return "block";
-}
-
-// Inverse d'extractBlocks : remplace les <p data-block-token="UUID"> par leur
-// HTML d'origine au moment du save.
-function reinjectBlocks(html: string, blocks: Map<string, string>): string {
-  if (!blocks.size || typeof window === "undefined") return html;
-  const wrap = document.createElement("div");
-  wrap.innerHTML = html;
-  const tokens = Array.from(wrap.querySelectorAll("[data-block-token]"));
-  for (const t of tokens) {
-    const uid = t.getAttribute("data-block-token");
-    if (!uid) continue;
-    const raw = blocks.get(uid);
-    if (!raw) continue;
+  const wrappers = Array.from(wrap.querySelectorAll("[data-html-content]"));
+  for (const w of wrappers) {
+    const enc = w.getAttribute("data-html-content") ?? "";
+    let raw = "";
+    try {
+      raw = decodeURIComponent(enc);
+    } catch {
+      raw = "";
+    }
+    if (!raw) {
+      w.remove();
+      continue;
+    }
     const tmp = document.createElement("div");
     tmp.innerHTML = raw;
     const replacement = tmp.firstElementChild;
-    if (replacement) t.replaceWith(replacement);
+    if (replacement) w.replaceWith(replacement);
+    else w.remove();
   }
   return wrap.innerHTML;
 }

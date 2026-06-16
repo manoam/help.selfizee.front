@@ -313,44 +313,55 @@ select.input-field {
   line-height: 20px;
 }
 
-/* Tokens placeholders pour les blocs CRM (accordéon, message) dans l'éditeur.
-   Visuel propre, non éditable inline. Le HTML d'origine est ré-injecté au save.
-   La couleur du placeholder correspond au type pour identification visuelle. */
-.ProseMirror p[data-block-token] {
-  display: block;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin: 8px 0;
+/* Blocs HTML CRM dans l'editeur (NodeView TipTap).
+   Affiche le vrai rendu (accordeon, info/note/attention) avec un bouton
+   delete en overlay au survol et une bordure pointillee pour bien identifier
+   les blocs editables. */
+.tiptap-html-block {
+  position: relative;
+  margin: 12px 0;
+  padding: 2px;
+  border-radius: 8px;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s;
+}
+.tiptap-html-block:hover {
+  outline-color: var(--k-primary);
+}
+.tiptap-html-block-content > * {
+  margin: 0;
+}
+.tiptap-html-block-delete {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--k-danger);
+  color: #fff;
   font-size: 13px;
-  font-style: italic;
+  font-weight: 700;
+  border: 2px solid #fff;
   cursor: pointer;
-  border: 1px dashed;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
-.ProseMirror p[data-block-token][data-block-kind="info"] {
-  background: #fef3c7;
-  border-color: #f59e0b;
-  color: #78350f;
+.tiptap-html-block:hover .tiptap-html-block-delete {
+  display: flex;
 }
-.ProseMirror p[data-block-token][data-block-kind="note"] {
-  background: #dbeafe;
-  border-color: #3b82f6;
-  color: #1e3a8a;
+.ProseMirror-selectednode .tiptap-html-block-delete {
+  display: flex;
 }
-.ProseMirror p[data-block-token][data-block-kind="attention"] {
-  background: #fee2e2;
-  border-color: #ef4444;
-  color: #7f1d1d;
-}
-.ProseMirror p[data-block-token][data-block-kind="accordion"] {
-  background: #e0e7ff;
-  border-color: #6366f1;
-  color: #3730a3;
-}
-/* Fallback si kind absent (anciens blocs / unknown) */
-.ProseMirror p[data-block-token]:not([data-block-kind]) {
-  background: #fef3c7;
-  border-color: #f59e0b;
-  color: #78350f;
+.ProseMirror-selectednode {
+  outline: 2px solid var(--k-primary) !important;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* RichTextEditorHtml (admin) : retire le contour bleu du contenteditable
