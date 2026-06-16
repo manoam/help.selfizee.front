@@ -314,21 +314,43 @@ select.input-field {
 }
 
 /* Tokens placeholders pour les blocs CRM (accordéon, message) dans l'éditeur.
-   Visuel propre, non éditable inline. Le HTML d'origine est ré-injecté au save. */
+   Visuel propre, non éditable inline. Le HTML d'origine est ré-injecté au save.
+   La couleur du placeholder correspond au type pour identification visuelle. */
 .ProseMirror p[data-block-token] {
   display: block;
-  background: #fef3c7;
-  border: 1px dashed #f59e0b;
-  color: #78350f;
   padding: 8px 12px;
   border-radius: 6px;
   margin: 8px 0;
   font-size: 13px;
   font-style: italic;
   cursor: pointer;
+  border: 1px dashed;
 }
-.ProseMirror p[data-block-token]::before {
-  content: "";
+.ProseMirror p[data-block-token][data-block-kind="info"] {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #78350f;
+}
+.ProseMirror p[data-block-token][data-block-kind="note"] {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e3a8a;
+}
+.ProseMirror p[data-block-token][data-block-kind="attention"] {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #7f1d1d;
+}
+.ProseMirror p[data-block-token][data-block-kind="accordion"] {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #3730a3;
+}
+/* Fallback si kind absent (anciens blocs / unknown) */
+.ProseMirror p[data-block-token]:not([data-block-kind]) {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #78350f;
 }
 
 /* RichTextEditorHtml (admin) : retire le contour bleu du contenteditable

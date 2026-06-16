@@ -39,9 +39,10 @@ const MESSAGE_LABEL: Record<MessageType, string> = {
   attention: "Attention (rouge)",
 };
 
-// Extension TipTap qui ajoute l'attribut data-block-token aux paragraphes
-// (sinon StarterKit le strippe). Permet de stocker un UUID qui pointe vers
-// le HTML brut d'un bloc CRM (accordéon / message) gardé hors de TipTap.
+// Extension TipTap qui ajoute les attributs data-block-token + data-block-kind
+// aux paragraphes (sinon StarterKit les strippe). Permet de stocker un UUID
+// qui pointe vers le HTML brut d'un bloc CRM gardé hors de TipTap, et le
+// kind sert au styling du placeholder.
 const BlockTokenAttr = Extension.create({
   name: "blockTokenAttr",
   addGlobalAttributes() {
@@ -55,6 +56,14 @@ const BlockTokenAttr = Extension.create({
             renderHTML: (attrs) => {
               if (!attrs["data-block-token"]) return {};
               return { "data-block-token": attrs["data-block-token"] };
+            },
+          },
+          "data-block-kind": {
+            default: null,
+            parseHTML: (el) => el.getAttribute("data-block-kind"),
+            renderHTML: (attrs) => {
+              if (!attrs["data-block-kind"]) return {};
+              return { "data-block-kind": attrs["data-block-kind"] };
             },
           },
         },
@@ -178,16 +187,21 @@ export function RichTextEditorHtml({
 
   // Insère un token <p>[[BLOCK:UUID]]</p> dans l'éditeur. Le vrai HTML
   // est stocké dans blocksRef et remappé au save (cf. reinjectBlocks).
-  const insertHtmlBlock = (html: string, label: string) => {
+  // kind sert juste au style du placeholder dans l'éditeur (couleur).
+  const insertHtmlBlock = (html: string, label: string, kind: string) => {
     const uid =
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     blocksRef.current.set(uid, html);
+    // Insère le token + un paragraphe vide après (pour que le curseur ait
+    // toujours où aller). On focus la position juste après le bloc.
     editor
       .chain()
       .focus()
-      .insertContent(`<p data-block-token="${uid}">${escapeHtmlAttr(label)}</p>`)
+      .insertContent(
+        `<p data-block-token="${uid}" data-block-kind="${kind}">${escapeHtmlAttr(label)}</p><p></p>`,
+      )
       .run();
   };
 
@@ -207,7 +221,7 @@ export function RichTextEditorHtml({
       `<div class="panel-body bootstrap-accordion-content">` +
       `${accContent || "&nbsp;"}` +
       `</div></div></div>`;
-    insertHtmlBlock(html, `▸ Accordéon : ${accTitle}`);
+    insertHtmlBlock(html, `▸ Accordéon : ${accTitle}`, "accordion");
     setAccTitle("");
     setAccContent("");
     setAccOpen(false);
@@ -222,7 +236,7 @@ export function RichTextEditorHtml({
       note: "🔵 À noter",
       attention: "⚠️ Attention",
     };
-    insertHtmlBlock(html, `${labelMap[msgType]} : ${msgContent}`);
+    insertHtmlBlock(html, `${labelMap[msgType]} : ${msgContent}`, msgType);
     setMsgContent("");
     setMsgOpen(false);
   };
@@ -518,8 +532,10 @@ function extractBlocks(html: string): {
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     blocks.set(uid, el.outerHTML);
     const label = labelForBlock(el as HTMLElement);
+    const kind = kindForBlock(el as HTMLElement);
     const placeholder = document.createElement("p");
     placeholder.setAttribute("data-block-token", uid);
+    placeholder.setAttribute("data-block-kind", kind);
     placeholder.textContent = label;
     el.replaceWith(placeholder);
   }
@@ -537,6 +553,14 @@ function labelForBlock(el: HTMLElement): string {
   if (el.classList.contains("attention"))
     return `⚠️ Attention : ${el.textContent?.trim() ?? ""}`;
   return "[bloc]";
+}
+
+function kindForBlock(el: HTMLElement): string {
+  if (el.classList.contains("bootstrap-accordion")) return "accordion";
+  if (el.classList.contains("info")) return "info";
+  if (el.classList.contains("note")) return "note";
+  if (el.classList.contains("attention")) return "attention";
+  return "block";
 }
 
 // Inverse d'extractBlocks : remplace les <p data-block-token="UUID"> par leur
