@@ -23,7 +23,7 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="max-w-6xl">
+    <div className="w-full">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[--k-text]">
           Bonjour {me?.name ?? me?.preferredUsername ?? me?.email ?? ""}

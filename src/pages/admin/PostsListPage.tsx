@@ -40,7 +40,7 @@ export function PostsListPage() {
     .filter((p) => (statusFilter ? p.status === statusFilter : true));
 
   return (
-    <div className="max-w-6xl">
+    <div className="w-full">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[--k-text]">Documents</h1>
