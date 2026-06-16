@@ -245,6 +245,16 @@ select.input-field {
   }
 }
 
+/* RichTextEditorHtml (admin) : retire le contour bleu du contenteditable
+   ProseMirror. Le wrapper parent gere deja la bordure focus. */
+.tiptap-noring .ProseMirror,
+.tiptap-noring .ProseMirror:focus,
+.tiptap-noring .ProseMirror:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
 /* Scrollbar custom — repris du projet stock-management pour cohérence visuelle. */
 ::-webkit-scrollbar {
   width: 6px;

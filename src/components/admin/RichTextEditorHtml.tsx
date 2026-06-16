@@ -220,11 +220,20 @@ export function RichTextEditorHtml({
         }}
       />
 
-      <EditorContent
-        editor={editor}
-        className="p-3 prose prose-sm max-w-none focus-within:outline-none"
+      <div
+        // Cliquer n'importe où dans la zone (même les marges) focus l'éditeur,
+        // pour ne pas obliger l'utilisateur à viser le texte.
+        onClick={() => {
+          if (!editor.isFocused) editor.commands.focus();
+        }}
+        className="cursor-text"
         style={{ minHeight: `${minHeight}px` }}
-      />
+      >
+        <EditorContent
+          editor={editor}
+          className="p-3 prose prose-sm max-w-none tiptap-noring"
+        />
+      </div>
 
       {!value && placeholder && (
         <div className="px-3 pb-2 text-xs text-[--k-muted] italic pointer-events-none">
