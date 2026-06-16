@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeViewRenderer } from "@tiptap/core";
 
 // Extension TipTap pour les blocs HTML CRM (accordéon, message info/note/attention).
 // Ces blocs sont stockés tels quels (HTML brut) et rendus dans l'éditeur via un
@@ -27,40 +28,45 @@ export const HtmlBlock = Node.create({
     return [
       {
         tag: "div.bootstrap-accordion",
-        getAttrs: (dom) => ({
-          html: (dom as HTMLElement).outerHTML,
+        getAttrs: (dom: HTMLElement | string) => ({
+          html: typeof dom === "string" ? "" : dom.outerHTML,
           kind: "accordion",
         }),
       },
       {
         tag: "div.info",
-        getAttrs: (dom) => ({
-          html: (dom as HTMLElement).outerHTML,
+        getAttrs: (dom: HTMLElement | string) => ({
+          html: typeof dom === "string" ? "" : dom.outerHTML,
           kind: "info",
         }),
       },
       {
         tag: "div.note",
-        getAttrs: (dom) => ({
-          html: (dom as HTMLElement).outerHTML,
+        getAttrs: (dom: HTMLElement | string) => ({
+          html: typeof dom === "string" ? "" : dom.outerHTML,
           kind: "note",
         }),
       },
       {
         tag: "div.attention",
-        getAttrs: (dom) => ({
-          html: (dom as HTMLElement).outerHTML,
+        getAttrs: (dom: HTMLElement | string) => ({
+          html: typeof dom === "string" ? "" : dom.outerHTML,
           kind: "attention",
         }),
       },
     ];
   },
 
-  renderHTML({ HTMLAttributes, node }) {
-    // Côté getHTML() (save), on rend un wrapper vide avec data-html-kind.
-    // Le contenu HTML réel est dans node.attrs.html — on le post-traite pour
-    // remplacer le wrapper par le HTML brut (cf. extractRawBlocks dans
-    // RichTextEditorHtml).
+  renderHTML({
+    HTMLAttributes,
+    node,
+  }: {
+    HTMLAttributes: Record<string, unknown>;
+    node: { attrs: { html: string; kind: string } };
+  }) {
+    // Côté getHTML() (save), on rend un wrapper avec data-html-content
+    // (HTML encodé). Le post-traitement rehydrateBlocks le remplace ensuite
+    // par le HTML brut côté RichTextEditorHtml.
     return [
       "div",
       mergeAttributes(HTMLAttributes, {
@@ -70,27 +76,24 @@ export const HtmlBlock = Node.create({
     ];
   },
 
-  addNodeView() {
+  addNodeView(): NodeViewRenderer {
     return ({ node, getPos, editor }) => {
       const dom = document.createElement("div");
       dom.className = "tiptap-html-block";
       dom.setAttribute("data-block-kind", node.attrs.kind);
-      // contenteditable=false : ProseMirror ne touche pas au contenu interne.
       dom.setAttribute("contenteditable", "false");
 
-      // Wrapper qui rend le HTML réel
       const inner = document.createElement("div");
       inner.className = "tiptap-html-block-content";
-      inner.innerHTML = node.attrs.html ?? "";
+      inner.innerHTML = (node.attrs.html as string | null) ?? "";
       dom.appendChild(inner);
 
-      // Bouton supprimer en overlay
       const delBtn = document.createElement("button");
       delBtn.type = "button";
       delBtn.className = "tiptap-html-block-delete";
       delBtn.setAttribute("title", "Supprimer ce bloc");
       delBtn.innerHTML = "✕";
-      delBtn.addEventListener("click", (e) => {
+      delBtn.addEventListener("click", (e: MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         const pos = typeof getPos === "function" ? getPos() : null;
