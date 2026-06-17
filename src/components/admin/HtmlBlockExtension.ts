@@ -57,21 +57,16 @@ export const HtmlBlock = Node.create({
     ];
   },
 
-  renderHTML({
-    HTMLAttributes,
-    node,
-  }: {
-    HTMLAttributes: Record<string, unknown>;
-    node: { attrs: { html: string; kind: string } };
-  }) {
+  renderHTML({ HTMLAttributes, node }) {
     // Côté getHTML() (save), on rend un wrapper avec data-html-content
     // (HTML encodé). Le post-traitement rehydrateBlocks le remplace ensuite
     // par le HTML brut côté RichTextEditorHtml.
+    const attrs = node.attrs as { html?: string; kind?: string };
     return [
       "div",
       mergeAttributes(HTMLAttributes, {
-        "data-html-block": node.attrs.kind,
-        "data-html-content": encodeURIComponent(node.attrs.html ?? ""),
+        "data-html-block": attrs.kind ?? "block",
+        "data-html-content": encodeURIComponent(attrs.html ?? ""),
       }),
     ];
   },
