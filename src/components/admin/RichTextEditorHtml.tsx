@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -100,6 +100,24 @@ export function RichTextEditorHtml({
       onChange(rehydrateBlocks(editor.getHTML()));
     },
   });
+
+  // Synchronise l'éditeur quand `value` change DE L'EXTÉRIEUR (chargement async
+  // des données du formulaire, changement d'onglet). Sans ça, l'éditeur monté
+  // avec content="" reste vide même quand la fiche est chargée ensuite —
+  // l'utilisateur devait changer d'onglet pour forcer un remount.
+  //
+  // On ne resync que si l'éditeur n'a pas le focus (sinon on écraserait la
+  // frappe en cours) et si le contenu diffère réellement (évite les boucles
+  // via onChange -> value -> setContent).
+  useEffect(() => {
+    if (!editor) return;
+    const next = value ?? "";
+    if (editor.isFocused) return;
+    const current = rehydrateBlocks(editor.getHTML());
+    if (current === next) return;
+    // emitUpdate:false -> ne redéclenche pas onUpdate (pas de remontée parasite).
+    editor.commands.setContent(next, false);
+  }, [value, editor]);
 
   if (!editor) return null;
 

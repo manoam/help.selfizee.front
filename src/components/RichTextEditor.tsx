@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { JSONContent } from "@tiptap/react";
@@ -15,6 +16,16 @@ export function RichTextEditor({ value, onChange }: Props) {
       onChange(editor.getJSON(), editor.getText());
     },
   });
+
+  // Resync quand `value` change de l'extérieur (chargement async / changement
+  // d'onglet), sans écraser la frappe en cours. Cf. RichTextEditorHtml.
+  useEffect(() => {
+    if (!editor) return;
+    if (editor.isFocused) return;
+    const next = value ?? { type: "doc", content: [{ type: "paragraph" }] };
+    if (JSON.stringify(editor.getJSON()) === JSON.stringify(next)) return;
+    editor.commands.setContent(next, false);
+  }, [value, editor]);
 
   if (!editor) return null;
 
