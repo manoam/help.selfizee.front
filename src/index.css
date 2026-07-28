@@ -25,6 +25,8 @@
   --a-accent: #e71e56;
   --a-accent-soft: #fdf1f6;
   --a-accent-border: #f8c8d8;
+  /* Rose clair du champ de recherche dans le header (repris du CRM: .search #f6adc1). */
+  --a-search: #f6adc1;
   --a-bg: #fafafa;
   --a-surface: #ffffff;
   --a-surface-2: #ebeff2;

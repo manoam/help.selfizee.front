@@ -1,79 +1,81 @@
 import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { LifeBuoy, Settings, Search, Star } from "lucide-react";
+import { Search, Star, Settings } from "lucide-react";
 
+// Layout public reproduisant l'espace assistance du CRM Selfizee :
+//  - header rose plein (#e71e56) avec logo blanc + "Centre d'assistance"
+//  - bloc de recherche rose séparé sous le header (champ rose clair #f6adc1)
+// Cf. src/Template/Element/menu_assistance.ctp + css/Header/header-assistance.css.
 export function PublicLayout() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
 
   const submitSearch = () => {
     const trimmed = q.trim();
-    if (trimmed.length >= 2) {
-      navigate(`/recherche?q=${encodeURIComponent(trimmed)}`);
-    } else {
-      navigate("/recherche");
-    }
+    navigate(trimmed.length >= 2 ? `/recherche?q=${encodeURIComponent(trimmed)}` : "/recherche");
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--a-bg)]">
-      <header className="bg-white border-b border-[var(--a-surface-2)] shadow-sm sticky top-0 z-30">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4">
+      {/* Header rose */}
+      <header className="bg-[var(--a-accent)] sticky top-0 z-30">
+        <div className="mx-auto max-w-[1025px] px-4 md:px-6 h-[64px] flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2.5 shrink-0">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--a-accent-soft)]">
-              <LifeBuoy className="h-5 w-5 text-[var(--a-accent)]" />
+            <span className="text-2xl font-bold text-white leading-none">
+              Selfizee
+              <sup className="text-[10px] font-normal align-super">™</sup>
             </span>
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--a-text-muted)]">
-                Selfizee
-              </span>
-              <span className="text-sm font-semibold text-[var(--a-text)]">
-                Support &amp; assistance
-              </span>
-            </div>
+            <span className="hidden sm:inline text-white/90 text-sm font-light">
+              Centre d'assistance
+            </span>
           </Link>
 
-          {/* Barre de recherche centrale */}
-          <div className="flex-1 max-w-xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--a-text-muted)]" />
-              <input
-                type="search"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") submitSearch();
-                }}
-                placeholder="Rechercher un article..."
-                className="w-full pl-9 pr-4 py-2 text-sm bg-[var(--a-bg)] border border-[var(--a-surface-2)] rounded-lg focus:outline-none focus:border-[var(--a-accent)] focus:bg-white transition"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1">
             <Link
               to="/favoris"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--a-text-muted)] hover:text-[var(--a-accent)] transition"
+              title="Favoris"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-full text-white/90 hover:bg-white/15 transition"
             >
-              <Star className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Favoris</span>
+              <Star className="h-5 w-5" />
             </Link>
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--a-text-muted)] hover:text-[var(--a-text)] transition"
+              title="Espace admin"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-full text-white/90 hover:bg-white/15 transition"
             >
-              <Settings className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Admin</span>
+              <Settings className="h-5 w-5" />
             </Link>
           </div>
         </div>
       </header>
+
+      {/* Bloc de recherche rose (sous le header) */}
+      <div className="bg-[var(--a-accent)] pb-4 pt-1">
+        <div className="mx-auto max-w-[1025px] px-4 md:px-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/80 pointer-events-none" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submitSearch();
+              }}
+              placeholder="Problématique ou numéro de fiche"
+              aria-label="Rechercher"
+              className="w-full h-11 pl-12 pr-4 text-sm rounded-lg bg-[var(--a-search)] text-[var(--a-text)] placeholder-white/90 border-0 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
+            />
+          </div>
+        </div>
+      </div>
+
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-[var(--a-surface-2)] bg-white py-6 mt-12">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 text-center text-xs text-[var(--a-text-muted)]">
-          © {new Date().getFullYear()} Selfizee — Support &amp; assistance
+
+      <footer className="py-6 mt-8">
+        <div className="mx-auto max-w-[1025px] px-4 md:px-6 text-center text-xs text-[var(--a-text-muted)]">
+          © {new Date().getFullYear()} Selfizee — Centre d'assistance
         </div>
       </footer>
     </div>
