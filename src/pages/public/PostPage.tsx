@@ -1,9 +1,18 @@
-import { useState, useMemo, useEffect } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  type ReactNode,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import {
   Home,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Tag as TagIcon,
   AlertCircle,
   Star,
@@ -165,10 +174,20 @@ export function PostPage() {
           <div className="a-problematique mb-6">
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-[var(--a-accent)] mt-1 shrink-0" />
-              <div
-                className="a-html-content flex-1"
-                dangerouslySetInnerHTML={{ __html: safeHtml(post.descriptionProbleme) }}
-              />
+              <div className="flex-1">
+                <div
+                  className="a-html-content"
+                  dangerouslySetInnerHTML={{ __html: safeHtml(post.descriptionProbleme) }}
+                />
+                {post.question && (
+                  <a
+                    href="#formulations"
+                    className="inline-block mt-1 text-sm text-[var(--a-accent)] underline"
+                  >
+                    Voir les formulations
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -217,12 +236,13 @@ export function PostPage() {
           </>
         )}
 
-        {/* Questions */}
+        {/* Formulations */}
         {post.question && (
-          <div className="mt-8 pt-6 border-t border-[var(--a-surface-2)]">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text)] mb-3">
-              Questions associées
-            </h3>
+          <div
+            id="formulations"
+            className="mt-8 pt-6 border-t border-[var(--a-surface-2)] scroll-mt-24"
+          >
+            <h3 className="a-title-accent text-base mb-3">Formulations :</h3>
             <div
               className="a-html-content"
               dangerouslySetInnerHTML={{ __html: safeHtml(post.question) }}
@@ -314,6 +334,9 @@ export function PostPage() {
   );
 }
 
+// Contenu d'une vue (client / call-center / interne) rendu en flux continu,
+// comme la fiche publique du CRM (intro -> notice -> problème, sans étiquettes
+// de section), replié avec un bouton "Afficher plus / moins".
 function ViewContent({
   intro,
   contenu,
@@ -331,49 +354,67 @@ function ViewContent({
       !Array.isArray(contenuTipTap),
   );
   return (
-    <div className="space-y-6">
-      {intro && (
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
-            Intro
-          </h3>
-          <div
-            className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: safeHtml(intro) }}
-          />
-        </section>
-      )}
-      {contenu && (
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
-            Contenu
-          </h3>
-          <div
-            className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: safeHtml(contenu) }}
-          />
-        </section>
-      )}
-      {hasTiptapContent && (
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
-            Contenu
-          </h3>
-          <div className="a-html-content">
-            <RichTextViewer content={contenuTipTap} />
-          </div>
-        </section>
-      )}
-      {probleme && (
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
-            Problème
-          </h3>
-          <div
-            className="a-html-content"
-            dangerouslySetInnerHTML={{ __html: safeHtml(probleme) }}
-          />
-        </section>
+    <Collapsible>
+      <div className="a-html-content space-y-4">
+        {intro && (
+          <div dangerouslySetInnerHTML={{ __html: safeHtml(intro) }} />
+        )}
+        {contenu && (
+          <div dangerouslySetInnerHTML={{ __html: safeHtml(contenu) }} />
+        )}
+        {hasTiptapContent && <RichTextViewer content={contenuTipTap} />}
+        {probleme && (
+          <div dangerouslySetInnerHTML={{ __html: safeHtml(probleme) }} />
+        )}
+      </div>
+    </Collapsible>
+  );
+}
+
+// Replie son contenu au-delà d'une hauteur (420px, cf. .a-collapsible) et
+// affiche un bouton "Afficher plus / moins" façon CRM. Le bouton n'apparaît
+// que si le contenu dépasse réellement la hauteur repliée.
+function Collapsible({ children }: { children: ReactNode }) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(true);
+  const [overflows, setOverflows] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    // 420 = max-height de .a-collapsible.is-collapsed (garder synchro avec le CSS).
+    const check = () => setOverflows(el.scrollHeight > 420 + 8);
+    check();
+    // Recheck après chargement des images (elles changent la hauteur).
+    const imgs = Array.from(el.querySelectorAll("img"));
+    imgs.forEach((img) => img.addEventListener("load", check));
+    return () => imgs.forEach((img) => img.removeEventListener("load", check));
+  }, [children]);
+
+  return (
+    <div>
+      <div
+        ref={innerRef}
+        className={`a-collapsible ${overflows && collapsed ? "is-collapsed" : ""}`}
+      >
+        {children}
+      </div>
+      {overflows && (
+        <button
+          type="button"
+          className="a-btn-more"
+          onClick={() => setCollapsed((c) => !c)}
+        >
+          {collapsed ? (
+            <>
+              Afficher plus <ChevronDown className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              Afficher moins <ChevronUp className="h-4 w-4" />
+            </>
+          )}
+        </button>
       )}
     </div>
   );

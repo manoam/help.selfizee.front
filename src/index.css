@@ -157,6 +157,45 @@ select.input-field {
   border-radius: 15px;
   padding: 15px 20px;
 }
+
+/* Bloc contenu repliable "Afficher plus / moins" (repris du CRM : bouton gris). */
+.a-collapsible {
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.a-collapsible.is-collapsed {
+  max-height: 420px;
+}
+/* Fondu en bas quand le contenu est tronqué, pour indiquer qu'il y a plus. */
+.a-collapsible.is-collapsed::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--a-surface));
+  pointer-events: none;
+}
+.a-btn-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
+  background: #9d9e9f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.a-btn-more:hover {
+  filter: brightness(0.95);
+}
 .a-tab-wrapper {
   display: flex;
   gap: 0.25rem;
