@@ -51,10 +51,10 @@ const RemoteSidebar = React.lazy(
 );
 
 function HeaderFallback() {
-  return <div className="h-12 shrink-0 border-b border-[--k-border] bg-white" />;
+  return <div className="h-12 shrink-0 border-b border-[var(--k-border)] bg-white" />;
 }
 function SidebarFallback() {
-  return <div className="w-[210px] shrink-0 bg-[--k-sidebar-bg] h-full" />;
+  return <div className="w-[210px] shrink-0 bg-[var(--k-sidebar-bg)] h-full" />;
 }
 
 interface EBProps {
@@ -143,7 +143,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[--k-bg]">
+    <div className="h-screen flex flex-col bg-[var(--k-bg)]">
       <RemoteErrorBoundary fallback={<HeaderFallback />}>
         <Suspense fallback={<HeaderFallback />}>
           <RemoteHeaderBar

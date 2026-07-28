@@ -37,19 +37,19 @@ export function Modal({
         className={`bg-white rounded-xl shadow-xl w-full ${widthClass} max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[--k-border]">
-          <h3 className="text-sm font-semibold text-[--k-text]">{title}</h3>
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[var(--k-border)]">
+          <h3 className="text-sm font-semibold text-[var(--k-text)]">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-[--k-muted] hover:text-[--k-text] transition"
+            className="text-[var(--k-muted)] hover:text-[var(--k-text)] transition"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="p-5 overflow-y-auto flex-1">{children}</div>
         {footer && (
-          <div className="shrink-0 flex flex-wrap items-center justify-end gap-2 px-5 py-3 border-t border-[--k-border] bg-white rounded-b-xl">
+          <div className="shrink-0 flex flex-wrap items-center justify-end gap-2 px-5 py-3 border-t border-[var(--k-border)] bg-white rounded-b-xl">
             {footer}
           </div>
         )}

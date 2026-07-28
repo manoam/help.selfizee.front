@@ -1,5 +1,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import type { NodeViewRenderer } from "@tiptap/core";
+import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 
 // Extension TipTap pour les blocs HTML CRM (accordéon, message info/note/attention).
 // Ces blocs sont stockés tels quels (HTML brut) et rendus dans l'éditeur via un
@@ -21,6 +22,35 @@ export const HtmlBlock = Node.create({
     return {
       html: { default: "" },
       kind: { default: "block" },
+    };
+  },
+
+  // Entrée quand un bloc atomique est sélectionné (ex : après un clic dessus) :
+  // insérer un paragraphe vide juste après le bloc et y placer le curseur,
+  // au lieu du comportement par défaut qui remplace/duplique le node.
+  addKeyboardShortcuts() {
+    return {
+      Enter: ({ editor }) => {
+        const { selection } = editor.state;
+        if (
+          selection instanceof NodeSelection &&
+          selection.node.type.name === this.name
+        ) {
+          const posAfter = selection.$to.pos;
+          return editor
+            .chain()
+            .insertContentAt(posAfter, { type: "paragraph" })
+            .command(({ tr, dispatch }) => {
+              if (dispatch) {
+                tr.setSelection(TextSelection.near(tr.doc.resolve(posAfter + 1)));
+              }
+              return true;
+            })
+            .focus()
+            .run();
+        }
+        return false;
+      },
     };
   },
 

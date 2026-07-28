@@ -61,16 +61,16 @@ export function TagsAdminPage() {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[--k-text]">Tags</h1>
-          <p className="text-sm text-[--k-muted] mt-1">
+          <h1 className="text-2xl font-bold text-[var(--k-text)]">Tags</h1>
+          <p className="text-sm text-[var(--k-muted)] mt-1">
             {tags.length} tag{tags.length > 1 ? "s" : ""} au total
           </p>
         </div>
       </div>
 
       {/* Nouveau tag */}
-      <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft p-4 mb-6">
-        <h2 className="text-sm font-semibold text-[--k-text] mb-3">
+      <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft p-4 mb-6">
+        <h2 className="text-sm font-semibold text-[var(--k-text)] mb-3">
           Créer un tag
         </h2>
         <div className="flex gap-2">
@@ -87,14 +87,14 @@ export function TagsAdminPage() {
             type="button"
             onClick={() => create.mutate(newName)}
             disabled={!newName.trim() || create.isPending}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition shadow-sm shadow-[--k-primary]/30 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition shadow-sm shadow-[var(--k-primary)]/30 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             Créer
           </button>
         </div>
         {create.isError && (
-          <div className="flex items-center gap-2 mt-2 text-xs text-[--k-danger]">
+          <div className="flex items-center gap-2 mt-2 text-xs text-[var(--k-danger)]">
             <AlertCircle className="h-3.5 w-3.5" />
             Erreur (doublon ?)
           </div>
@@ -102,34 +102,34 @@ export function TagsAdminPage() {
       </div>
 
       {/* Liste */}
-      <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft overflow-hidden">
+      <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft overflow-hidden">
         {isLoading && (
-          <div className="p-8 text-center text-sm text-[--k-muted]">
+          <div className="p-8 text-center text-sm text-[var(--k-muted)]">
             Chargement…
           </div>
         )}
         {!isLoading && tags.length === 0 && (
           <div className="p-12 text-center">
-            <TagIcon className="h-12 w-12 mx-auto mb-3 text-[--k-muted] opacity-50" />
-            <p className="text-sm font-medium text-[--k-text]">
+            <TagIcon className="h-12 w-12 mx-auto mb-3 text-[var(--k-muted)] opacity-50" />
+            <p className="text-sm font-medium text-[var(--k-text)]">
               Aucun tag
             </p>
           </div>
         )}
         {!isLoading && tags.length > 0 && (
           <table className="w-full text-sm">
-            <thead className="text-left border-b border-[--k-border] bg-[--k-surface-2]/40">
+            <thead className="text-left border-b border-[var(--k-border)] bg-[var(--k-surface-2)]/40">
               <tr>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Nom
                 </th>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Slug
                 </th>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Posts
                 </th>
-                <th className="py-2.5 px-4 text-right text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-right text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Actions
                 </th>
               </tr>
@@ -138,7 +138,7 @@ export function TagsAdminPage() {
               {tags.map((t) => (
                 <tr
                   key={t.id}
-                  className="border-b border-[--k-border] last:border-0 hover:bg-[--k-surface-2]/40 transition group"
+                  className="border-b border-[var(--k-border)] last:border-0 hover:bg-[var(--k-surface-2)]/40 transition group"
                 >
                   <td className="py-3 px-4">
                     {editingId === t.id ? (
@@ -155,17 +155,17 @@ export function TagsAdminPage() {
                       />
                     ) : (
                       <div className="flex items-center gap-2">
-                        <TagIcon className="h-4 w-4 text-[--k-muted]" />
-                        <span className="font-medium text-[--k-text]">
+                        <TagIcon className="h-4 w-4 text-[var(--k-muted)]" />
+                        <span className="font-medium text-[var(--k-text)]">
                           {t.name}
                         </span>
                       </div>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-[--k-muted] font-mono text-xs">
+                  <td className="py-3 px-4 text-[var(--k-muted)] font-mono text-xs">
                     {t.slug}
                   </td>
-                  <td className="py-3 px-4 text-[--k-muted]">
+                  <td className="py-3 px-4 text-[var(--k-muted)]">
                     {t._count?.posts ?? 0}
                   </td>
                   <td className="py-3 px-4 text-right">
@@ -184,7 +184,7 @@ export function TagsAdminPage() {
                         <button
                           type="button"
                           onClick={() => setEditingId(null)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:bg-[--k-surface-2] transition"
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:bg-[var(--k-surface-2)] transition"
                           title="Annuler"
                         >
                           <X className="h-4 w-4" />
@@ -195,7 +195,7 @@ export function TagsAdminPage() {
                         <button
                           type="button"
                           onClick={() => startEdit(t.id, t.name)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-primary] hover:bg-[--k-primary-2] transition"
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-primary)] hover:bg-[var(--k-primary-2)] transition"
                           title="Éditer"
                         >
                           <Pencil className="h-4 w-4" />
@@ -210,7 +210,7 @@ export function TagsAdminPage() {
                             )
                               remove.mutate(t.id);
                           }}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-danger] hover:bg-red-50 transition"
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-danger)] hover:bg-red-50 transition"
                           title="Supprimer"
                         >
                           <Trash2 className="h-4 w-4" />

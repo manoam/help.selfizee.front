@@ -69,7 +69,7 @@ export function PostPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-5xl px-4 md:px-6 py-12">
-        <p className="text-sm text-[--a-text-muted]">Chargement…</p>
+        <p className="text-sm text-[var(--a-text-muted)]">Chargement…</p>
       </div>
     );
   }
@@ -77,10 +77,10 @@ export function PostPage() {
   if (isError || !post) {
     return (
       <div className="mx-auto max-w-5xl px-4 md:px-6 py-12">
-        <p className="text-sm text-[--a-text-muted]">Article introuvable.</p>
+        <p className="text-sm text-[var(--a-text-muted)]">Article introuvable.</p>
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 mt-4 text-sm text-[--a-accent] hover:underline"
+          className="inline-flex items-center gap-1.5 mt-4 text-sm text-[var(--a-accent)] hover:underline"
         >
           ← Retour à l'accueil
         </Link>
@@ -97,10 +97,10 @@ export function PostPage() {
   return (
     <article className="mx-auto max-w-5xl px-4 md:px-6 py-6 md:py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-[--a-text-muted] mb-4 flex-wrap">
+      <nav className="flex items-center gap-1.5 text-xs text-[var(--a-text-muted)] mb-4 flex-wrap">
         <Link
           to="/"
-          className="inline-flex items-center gap-1 hover:text-[--a-text] transition"
+          className="inline-flex items-center gap-1 hover:text-[var(--a-text)] transition"
         >
           <Home className="h-3 w-3" />
           Accueil
@@ -110,7 +110,7 @@ export function PostPage() {
             <ChevronRight className="h-3 w-3" />
             <Link
               to={`/categorie/${mainCat.category.slug}`}
-              className="hover:text-[--a-text] transition"
+              className="hover:text-[var(--a-text)] transition"
             >
               {mainCat.category.nom}
             </Link>
@@ -123,7 +123,7 @@ export function PostPage() {
           </>
         )}
         <ChevronRight className="h-3 w-3" />
-        <span className="text-[--a-text] font-medium truncate">
+        <span className="text-[var(--a-text)] font-medium truncate">
           {post.titre}
         </span>
       </nav>
@@ -137,7 +137,7 @@ export function PostPage() {
               {post.titre}
             </h1>
             {post.resume && (
-              <p className="text-sm text-[--a-text-muted] mt-2">
+              <p className="text-sm text-[var(--a-text-muted)] mt-2">
                 {post.resume}
               </p>
             )}
@@ -154,7 +154,7 @@ export function PostPage() {
         </div>
 
         {updatedAt && (
-          <div className="flex items-center gap-1.5 text-xs text-[--a-text-muted] mb-6">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--a-text-muted)] mb-6">
             <Calendar className="h-3.5 w-3.5" />
             <i>Dernière maj : {updatedAt.toLocaleDateString("fr-FR")}</i>
           </div>
@@ -164,7 +164,7 @@ export function PostPage() {
         {post.descriptionProbleme && (
           <div className="a-problematique mb-6">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-[--a-accent] mt-1 shrink-0" />
+              <AlertCircle className="h-4 w-4 text-[var(--a-accent)] mt-1 shrink-0" />
               <div
                 className="a-html-content flex-1"
                 dangerouslySetInnerHTML={{ __html: safeHtml(post.descriptionProbleme) }}
@@ -219,8 +219,8 @@ export function PostPage() {
 
         {/* Questions */}
         {post.question && (
-          <div className="mt-8 pt-6 border-t border-[--a-surface-2]">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-[--a-text] mb-3">
+          <div className="mt-8 pt-6 border-t border-[var(--a-surface-2)]">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text)] mb-3">
               Questions associées
             </h3>
             <div
@@ -232,13 +232,13 @@ export function PostPage() {
 
         {/* Tags */}
         {post.tags.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap mt-6 pt-6 border-t border-[--a-surface-2]">
-            <TagIcon className="h-3.5 w-3.5 text-[--a-text-muted]" />
+          <div className="flex items-center gap-2 flex-wrap mt-6 pt-6 border-t border-[var(--a-surface-2)]">
+            <TagIcon className="h-3.5 w-3.5 text-[var(--a-text-muted)]" />
             {post.tags.map(({ tag }) => (
               <Link
                 key={tag.id}
                 to={`/tag/${tag.slug}`}
-                className="a-pill text-xs hover:bg-[--a-surface-3] transition"
+                className="a-pill text-xs hover:bg-[var(--a-surface-3)] transition"
               >
                 {tag.name}
               </Link>
@@ -253,7 +253,7 @@ export function PostPage() {
       {/* Fichiers attachés */}
       {post.attachments.length > 0 && (
         <div className="a-card p-5 md:p-6 mt-6">
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[--a-text] mb-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--a-text)] mb-4">
             <Paperclip className="h-4 w-4" />
             Ressources disponibles
           </h2>
@@ -261,22 +261,22 @@ export function PostPage() {
             {post.attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-3 p-3 rounded-lg border border-[--a-surface-2] bg-[--a-bg]"
+                className="flex items-center gap-3 p-3 rounded-lg border border-[var(--a-surface-2)] bg-[var(--a-bg)]"
               >
-                <FileText className="h-5 w-5 text-[--a-accent] shrink-0" />
+                <FileText className="h-5 w-5 text-[var(--a-accent)] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-[--a-text] truncate">
+                  <div className="text-sm font-medium text-[var(--a-text)] truncate">
                     {att.label || att.originalName || att.filename}
                   </div>
                   {att.description && (
-                    <p className="text-xs text-[--a-text-muted] truncate">
+                    <p className="text-xs text-[var(--a-text-muted)] truncate">
                       {att.description}
                     </p>
                   )}
                 </div>
                 <a
                   href={`${api.defaults.baseURL ?? ""}/public-attachments/${att.id}/download`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--a-accent] border border-[--a-accent-border] bg-[--a-accent-soft] rounded-full hover:brightness-95 transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--a-accent)] border border-[var(--a-accent-border)] bg-[var(--a-accent-soft)] rounded-full hover:brightness-95 transition"
                 >
                   <Download className="h-3 w-3" />
                   Télécharger
@@ -290,7 +290,7 @@ export function PostPage() {
       {/* Articles liés */}
       {post.relatedTo.length > 0 && (
         <div className="a-card p-5 md:p-6 mt-6">
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[--a-text] mb-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--a-text)] mb-4">
             Articles liés
           </h2>
           <div className="space-y-2">
@@ -298,13 +298,13 @@ export function PostPage() {
               <Link
                 key={to.id}
                 to={`/post/${to.slug}`}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[--a-surface-3] transition group"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[var(--a-surface-3)] transition group"
               >
-                <FileText className="h-4 w-4 text-[--a-text-muted] shrink-0" />
-                <span className="flex-1 text-sm text-[--a-text] group-hover:text-[--a-accent] transition truncate">
+                <FileText className="h-4 w-4 text-[var(--a-text-muted)] shrink-0" />
+                <span className="flex-1 text-sm text-[var(--a-text)] group-hover:text-[var(--a-accent)] transition truncate">
                   {to.titre}
                 </span>
-                <ChevronRight className="h-4 w-4 text-[--a-text-muted] group-hover:text-[--a-accent] transition shrink-0" />
+                <ChevronRight className="h-4 w-4 text-[var(--a-text-muted)] group-hover:text-[var(--a-accent)] transition shrink-0" />
               </Link>
             ))}
           </div>
@@ -334,7 +334,7 @@ function ViewContent({
     <div className="space-y-6">
       {intro && (
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[--a-text-muted] mb-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
             Intro
           </h3>
           <div
@@ -345,7 +345,7 @@ function ViewContent({
       )}
       {contenu && (
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[--a-text-muted] mb-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
             Contenu
           </h3>
           <div
@@ -356,7 +356,7 @@ function ViewContent({
       )}
       {hasTiptapContent && (
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[--a-text-muted] mb-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
             Contenu
           </h3>
           <div className="a-html-content">
@@ -366,7 +366,7 @@ function ViewContent({
       )}
       {probleme && (
         <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[--a-text-muted] mb-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--a-text-muted)] mb-2">
             Problème
           </h3>
           <div

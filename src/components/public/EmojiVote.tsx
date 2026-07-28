@@ -35,11 +35,11 @@ export function EmojiVote({ postId }: { postId: number }) {
   });
 
   return (
-    <div className="bg-[--a-surface-3] rounded-xl p-5 md:p-6 mt-6">
-      <p className="text-sm font-semibold text-[--a-text] mb-1 text-center">
+    <div className="bg-[var(--a-surface-3)] rounded-xl p-5 md:p-6 mt-6">
+      <p className="text-sm font-semibold text-[var(--a-text)] mb-1 text-center">
         Cet article vous a-t-il aidé ?
       </p>
-      <p className="text-xs text-[--a-text-muted] mb-4 text-center">
+      <p className="text-xs text-[var(--a-text-muted)] mb-4 text-center">
         Cliquez sur l'emoji qui correspond à votre ressenti.
       </p>
       <div className="flex items-center justify-center gap-3 md:gap-6">
@@ -57,16 +57,16 @@ export function EmojiVote({ postId }: { postId: number }) {
               disabled={setVote.isPending || removeVote.isPending}
               className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl transition disabled:opacity-50 ${
                 isMine
-                  ? "bg-white shadow-md ring-2 ring-[--a-accent]"
+                  ? "bg-white shadow-md ring-2 ring-[var(--a-accent)]"
                   : "hover:bg-white"
               }`}
               title={label}
             >
               <span className="text-3xl md:text-4xl">{emoji}</span>
-              <span className="text-[10px] uppercase font-semibold tracking-wide text-[--a-text-muted]">
+              <span className="text-[10px] uppercase font-semibold tracking-wide text-[var(--a-text-muted)]">
                 {label}
               </span>
-              <span className="text-xs font-semibold text-[--a-text]">
+              <span className="text-xs font-semibold text-[var(--a-text)]">
                 {count}
               </span>
             </button>

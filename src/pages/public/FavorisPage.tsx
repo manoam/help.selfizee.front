@@ -15,16 +15,16 @@ export function FavorisPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 md:px-6 py-6 md:py-8">
-      <nav className="flex items-center gap-1.5 text-xs text-[--a-text-muted] mb-6">
+      <nav className="flex items-center gap-1.5 text-xs text-[var(--a-text-muted)] mb-6">
         <Link
           to="/"
-          className="inline-flex items-center gap-1 hover:text-[--a-text] transition"
+          className="inline-flex items-center gap-1 hover:text-[var(--a-text)] transition"
         >
           <Home className="h-3 w-3" />
           Accueil
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-[--a-text] font-medium">Favoris</span>
+        <span className="text-[var(--a-text)] font-medium">Favoris</span>
       </nav>
 
       <div className="flex items-center gap-3 mb-6">
@@ -32,21 +32,21 @@ export function FavorisPage() {
           <Star className="h-6 w-6 fill-amber-500 text-amber-500" />
         </span>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[--a-text]">
+          <h1 className="text-2xl md:text-3xl font-bold text-[var(--a-text)]">
             Articles favoris
           </h1>
-          <p className="text-sm text-[--a-text-muted] mt-1">
+          <p className="text-sm text-[var(--a-text-muted)] mt-1">
             Les articles mis en avant par l'équipe.
           </p>
         </div>
       </div>
 
       {isLoading && (
-        <p className="text-sm text-[--a-text-muted]">Chargement…</p>
+        <p className="text-sm text-[var(--a-text-muted)]">Chargement…</p>
       )}
 
       {!isLoading && posts.length === 0 && (
-        <p className="text-sm text-[--a-text-muted] text-center py-12">
+        <p className="text-sm text-[var(--a-text-muted)] text-center py-12">
           Aucun article favori pour le moment.
         </p>
       )}
@@ -60,16 +60,16 @@ export function FavorisPage() {
           >
             <Star className="h-4 w-4 fill-amber-500 text-amber-500 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-[--a-text] group-hover:text-[--a-accent] transition">
+              <div className="text-sm font-medium text-[var(--a-text)] group-hover:text-[var(--a-accent)] transition">
                 {p.titre}
               </div>
               {p.resume && (
-                <p className="text-xs text-[--a-text-muted] mt-0.5 line-clamp-2">
+                <p className="text-xs text-[var(--a-text-muted)] mt-0.5 line-clamp-2">
                   {p.resume}
                 </p>
               )}
             </div>
-            <FileText className="h-4 w-4 text-[--a-text-muted] group-hover:text-[--a-accent] transition shrink-0" />
+            <FileText className="h-4 w-4 text-[var(--a-text-muted)] group-hover:text-[var(--a-accent)] transition shrink-0" />
           </Link>
         ))}
       </div>

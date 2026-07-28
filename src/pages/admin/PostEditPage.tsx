@@ -296,18 +296,18 @@ export function PostEditPage() {
     <div className="w-full pb-24">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-xs text-[--k-muted] mb-2">
-          <a href="/admin/posts" className="hover:text-[--k-text] transition">
+        <div className="flex items-center gap-2 text-xs text-[var(--k-muted)] mb-2">
+          <a href="/admin/posts" className="hover:text-[var(--k-text)] transition">
             Documents
           </a>
           <span>›</span>
-          <span className="text-[--k-text]">
+          <span className="text-[var(--k-text)]">
             {isNew ? "Nouveau" : existing?.titre ?? "…"}
           </span>
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-[--k-text]">
+            <h1 className="text-2xl font-bold text-[var(--k-text)]">
               {isNew ? "Nouveau document" : "Édition du document"}
             </h1>
             <span
@@ -329,7 +329,7 @@ export function PostEditPage() {
                   href={`/post/${existing.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--k-primary] border border-[--k-primary-border] bg-[--k-primary-2] rounded-lg hover:brightness-95 transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--k-primary)] border border-[var(--k-primary-border)] bg-[var(--k-primary-2)] rounded-lg hover:brightness-95 transition"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
                   Voir la page
@@ -337,7 +337,7 @@ export function PostEditPage() {
                 <button
                   type="button"
                   onClick={() => navigate("/admin/posts/new")}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Créer un nouveau
@@ -389,7 +389,7 @@ export function PostEditPage() {
           </Card>
 
           <Card icon={Eye} title="Vues (notice / problème par profil)">
-            <div className="flex gap-1 p-1 bg-[--k-surface-2] rounded-lg mb-4 w-fit">
+            <div className="flex gap-1 p-1 bg-[var(--k-surface-2)] rounded-lg mb-4 w-fit">
               {(["client", "callcenter", "interne"] as ViewTab[]).map((t) => (
                 <button
                   key={t}
@@ -397,8 +397,8 @@ export function PostEditPage() {
                   onClick={() => setTab(t)}
                   className={`px-4 py-1.5 text-xs font-medium rounded-md transition ${
                     tab === t
-                      ? "bg-white text-[--k-text] shadow-sm"
-                      : "text-[--k-muted] hover:text-[--k-text]"
+                      ? "bg-white text-[var(--k-text)] shadow-sm"
+                      : "text-[var(--k-muted)] hover:text-[var(--k-text)]"
                   }`}
                 >
                   {t === "client"
@@ -439,7 +439,7 @@ export function PostEditPage() {
                   label="Contenu"
                   hint="éditeur richtext (sauvegardé en JSON TipTap)"
                 >
-                  <div className="border border-[--k-border] rounded-lg overflow-hidden bg-white">
+                  <div className="border border-[var(--k-border)] rounded-lg overflow-hidden bg-white">
                     <RichTextEditor
                       value={form.contenu}
                       onChange={(json, text) =>
@@ -497,7 +497,7 @@ export function PostEditPage() {
                 return (
                   <div
                     key={idx}
-                    className="space-y-2 p-3 bg-[--k-surface-2] rounded-lg relative"
+                    className="space-y-2 p-3 bg-[var(--k-surface-2)] rounded-lg relative"
                   >
                     {form.categories.length > 1 && (
                       <button
@@ -508,7 +508,7 @@ export function PostEditPage() {
                             form.categories.filter((_, i) => i !== idx),
                           )
                         }
-                        className="absolute top-2 right-2 text-[--k-muted] hover:text-[--k-danger] transition"
+                        className="absolute top-2 right-2 text-[var(--k-muted)] hover:text-[var(--k-danger)] transition"
                         title="Retirer"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -593,7 +593,7 @@ export function PostEditPage() {
                     },
                   ])
                 }
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[--k-primary] hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--k-primary)] hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Ajouter une catégorie
@@ -630,19 +630,19 @@ export function PostEditPage() {
                 type="checkbox"
                 checked={form.isFavourite}
                 onChange={(e) => updateForm("isFavourite", e.target.checked)}
-                className="rounded border-[--k-border]"
+                className="rounded border-[var(--k-border)]"
               />
               <Star
-                className={`h-4 w-4 ${form.isFavourite ? "fill-amber-500 text-amber-500" : "text-[--k-muted]"}`}
+                className={`h-4 w-4 ${form.isFavourite ? "fill-amber-500 text-amber-500" : "text-[var(--k-muted)]"}`}
               />
-              <span className="text-[--k-text]">Afficher dans les favoris</span>
+              <span className="text-[var(--k-text)]">Afficher dans les favoris</span>
             </label>
           </Card>
 
           <Card icon={Server} title="Gammes de bornes">
             <div className="space-y-3">
               {form.modelBornes.length === 0 && (
-                <p className="text-xs text-[--k-muted] italic">
+                <p className="text-xs text-[var(--k-muted)] italic">
                   Aucune gamme associée
                 </p>
               )}
@@ -653,7 +653,7 @@ export function PostEditPage() {
                 return (
                   <div
                     key={idx}
-                    className="space-y-2 p-3 bg-[--k-surface-2] rounded-lg relative"
+                    className="space-y-2 p-3 bg-[var(--k-surface-2)] rounded-lg relative"
                   >
                     <button
                       type="button"
@@ -663,7 +663,7 @@ export function PostEditPage() {
                           form.modelBornes.filter((_, i) => i !== idx),
                         )
                       }
-                      className="absolute top-2 right-2 text-[--k-muted] hover:text-[--k-danger] transition"
+                      className="absolute top-2 right-2 text-[var(--k-muted)] hover:text-[var(--k-danger)] transition"
                       title="Retirer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -722,7 +722,7 @@ export function PostEditPage() {
                     { gammeBorneId: null, modelBorneId: null },
                   ])
                 }
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[--k-primary] hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--k-primary)] hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Ajouter une gamme
@@ -749,19 +749,19 @@ export function PostEditPage() {
       </div>
 
       {save.isError && (
-        <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-[--k-danger]">
+        <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-[var(--k-danger)]">
           <AlertCircle className="h-4 w-4 shrink-0" />
           Erreur lors de l'enregistrement.
         </div>
       )}
 
       {/* Sticky save bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[--k-border] bg-white/95 backdrop-blur-sm shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--k-border)] bg-white/95 backdrop-blur-sm shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
         <div className="w-full flex items-center justify-end gap-2 px-4 md:px-5 py-3">
           <button
             type="button"
             onClick={() => navigate("/admin/posts")}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
           >
             <X className="h-4 w-4" />
             Annuler
@@ -770,7 +770,7 @@ export function PostEditPage() {
             type="button"
             onClick={() => save.mutate({ stayOnPage: true, data: form })}
             disabled={save.isPending || !form.titre}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             Enregistrer et rester
@@ -779,7 +779,7 @@ export function PostEditPage() {
             type="button"
             onClick={() => save.mutate({ stayOnPage: false, data: form })}
             disabled={save.isPending || !form.titre}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50 shadow-sm shadow-[--k-primary]/30"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition disabled:opacity-50 shadow-sm shadow-[var(--k-primary)]/30"
           >
             <Save className="h-4 w-4" />
             {save.isPending ? "Enregistrement…" : "Enregistrer"}
@@ -802,10 +802,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft overflow-hidden">
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-[--k-border] bg-gradient-to-r from-white to-[--k-surface-2]/50">
-        <Icon className="h-4 w-4 text-[--k-primary] shrink-0" />
-        <h2 className="text-sm font-semibold text-[--k-text]">{title}</h2>
+    <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-[var(--k-border)] bg-gradient-to-r from-white to-[var(--k-surface-2)]/50">
+        <Icon className="h-4 w-4 text-[var(--k-primary)] shrink-0" />
+        <h2 className="text-sm font-semibold text-[var(--k-text)]">{title}</h2>
       </div>
       <div className="p-5 space-y-4">{children}</div>
     </div>
@@ -828,13 +828,13 @@ function Field({
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1.5">
-        {Icon && <Icon className="h-3.5 w-3.5 text-[--k-muted]" />}
-        <label className="block text-xs font-semibold text-[--k-text]">
+        {Icon && <Icon className="h-3.5 w-3.5 text-[var(--k-muted)]" />}
+        <label className="block text-xs font-semibold text-[var(--k-text)]">
           {label}
-          {required && <span className="text-[--k-danger] ml-0.5">*</span>}
+          {required && <span className="text-[var(--k-danger)] ml-0.5">*</span>}
         </label>
         {hint && (
-          <span className="text-[10px] text-[--k-muted] font-normal">
+          <span className="text-[10px] text-[var(--k-muted)] font-normal">
             ({hint})
           </span>
         )}
@@ -895,9 +895,9 @@ function MultiSelect({
     }
   };
   return (
-    <div className="border border-[--k-border] rounded-lg max-h-48 overflow-y-auto bg-white">
+    <div className="border border-[var(--k-border)] rounded-lg max-h-48 overflow-y-auto bg-white">
       {options.length === 0 && (
-        <div className="px-3 py-2 text-xs text-[--k-muted] italic">
+        <div className="px-3 py-2 text-xs text-[var(--k-muted)] italic">
           Aucune option disponible
         </div>
       )}
@@ -908,15 +908,15 @@ function MultiSelect({
             key={opt.id}
             className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer transition ${
               checked
-                ? "bg-[--k-primary-2] text-[--k-primary]"
-                : "hover:bg-[--k-surface-2]"
+                ? "bg-[var(--k-primary-2)] text-[var(--k-primary)]"
+                : "hover:bg-[var(--k-surface-2)]"
             }`}
           >
             <input
               type="checkbox"
               checked={checked}
               onChange={() => toggle(opt.id)}
-              className="rounded border-[--k-border]"
+              className="rounded border-[var(--k-border)]"
             />
             {opt.label}
           </label>
@@ -953,13 +953,13 @@ function TagPicker({
           {selectedTags.map((t) => (
             <span
               key={t.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[--k-primary-2] text-[--k-primary] border border-[--k-primary-border] rounded-full text-xs font-medium"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--k-primary-2)] text-[var(--k-primary)] border border-[var(--k-primary-border)] rounded-full text-xs font-medium"
             >
               {t.name}
               <button
                 type="button"
                 onClick={() => onChange(selectedIds.filter((x) => x !== t.id))}
-                className="hover:text-[--k-danger] transition"
+                className="hover:text-[var(--k-danger)] transition"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -974,13 +974,13 @@ function TagPicker({
         placeholder="Rechercher un tag..."
       />
       {filtered.length > 0 && (
-        <div className="border border-[--k-border] rounded-lg max-h-40 overflow-y-auto bg-white">
+        <div className="border border-[var(--k-border)] rounded-lg max-h-40 overflow-y-auto bg-white">
           {filtered.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => onChange([...selectedIds, t.id])}
-              className="w-full text-left text-sm px-3 py-1.5 hover:bg-[--k-surface-2] transition"
+              className="w-full text-left text-sm px-3 py-1.5 hover:bg-[var(--k-surface-2)] transition"
             >
               + {t.name}
             </button>

@@ -72,29 +72,29 @@ export function AttachmentsManager({ postId }: { postId: number }) {
             return (
               <div
                 key={att.id}
-                className="flex items-center gap-3 p-3 border border-[--k-border] rounded-lg bg-white hover:bg-[--k-surface-2]/40 transition group"
+                className="flex items-center gap-3 p-3 border border-[var(--k-border)] rounded-lg bg-white hover:bg-[var(--k-surface-2)]/40 transition group"
               >
                 <span
                   className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${
-                    isImage ? "bg-blue-50" : "bg-[--k-surface-2]"
+                    isImage ? "bg-blue-50" : "bg-[var(--k-surface-2)]"
                   }`}
                 >
                   <Icon
                     className={`h-5 w-5 ${
-                      isImage ? "text-blue-600" : "text-[--k-muted]"
+                      isImage ? "text-blue-600" : "text-[var(--k-muted)]"
                     }`}
                   />
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-[--k-text] truncate">
+                  <div className="text-sm font-medium text-[var(--k-text)] truncate">
                     {att.label || att.originalName || att.filename}
                   </div>
                   {att.description && (
-                    <div className="text-xs text-[--k-muted] truncate">
+                    <div className="text-xs text-[var(--k-muted)] truncate">
                       {att.description}
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-[10px] text-[--k-muted] mt-0.5">
+                  <div className="flex items-center gap-2 text-[10px] text-[var(--k-muted)] mt-0.5">
                     <span>{att.mimeType ?? "?"}</span>
                     <span>·</span>
                     <span>
@@ -107,7 +107,7 @@ export function AttachmentsManager({ postId }: { postId: number }) {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                   <a
                     href={`${api.defaults.baseURL ?? ""}/attachments/${att.id}/download`}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-primary] hover:bg-[--k-primary-2] transition"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-primary)] hover:bg-[var(--k-primary-2)] transition"
                     title="Télécharger"
                   >
                     <Download className="h-4 w-4" />
@@ -118,7 +118,7 @@ export function AttachmentsManager({ postId }: { postId: number }) {
                       if (confirm("Supprimer ce fichier ?"))
                         remove.mutate(att.id);
                     }}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-danger] hover:bg-red-50 transition"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-danger)] hover:bg-red-50 transition"
                     title="Supprimer"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -146,16 +146,16 @@ export function AttachmentsManager({ postId }: { postId: number }) {
         onClick={() => fileInput.current?.click()}
         className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
           dragging
-            ? "border-[--k-primary] bg-[--k-primary-2]"
-            : "border-[--k-border] hover:border-[--k-primary] hover:bg-[--k-surface-2]/40"
+            ? "border-[var(--k-primary)] bg-[var(--k-primary-2)]"
+            : "border-[var(--k-border)] hover:border-[var(--k-primary)] hover:bg-[var(--k-surface-2)]/40"
         }`}
       >
-        <Paperclip className="h-8 w-8 mx-auto mb-2 text-[--k-muted]" />
-        <p className="text-sm font-medium text-[--k-text]">
+        <Paperclip className="h-8 w-8 mx-auto mb-2 text-[var(--k-muted)]" />
+        <p className="text-sm font-medium text-[var(--k-text)]">
           Glissez un fichier ici ou{" "}
-          <span className="text-[--k-primary] underline">choisissez-en un</span>
+          <span className="text-[var(--k-primary)] underline">choisissez-en un</span>
         </p>
-        <p className="text-xs text-[--k-muted] mt-1">PDF, images, docs — 50 Mo max</p>
+        <p className="text-xs text-[var(--k-muted)] mt-1">PDF, images, docs — 50 Mo max</p>
         <input
           ref={fileInput}
           type="file"
@@ -170,7 +170,7 @@ export function AttachmentsManager({ postId }: { postId: number }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+          <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
             Titre du prochain upload
           </label>
           <input
@@ -182,7 +182,7 @@ export function AttachmentsManager({ postId }: { postId: number }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+          <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
             Description
           </label>
           <input
@@ -196,13 +196,13 @@ export function AttachmentsManager({ postId }: { postId: number }) {
       </div>
 
       {upload.isPending && (
-        <div className="flex items-center gap-2 text-xs text-[--k-muted]">
+        <div className="flex items-center gap-2 text-xs text-[var(--k-muted)]">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Upload en cours…
         </div>
       )}
       {upload.isError && (
-        <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-[--k-danger]">
+        <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-[var(--k-danger)]">
           <AlertCircle className="h-3.5 w-3.5" />
           Erreur lors de l'upload.
         </div>

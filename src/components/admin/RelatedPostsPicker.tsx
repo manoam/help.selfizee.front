@@ -55,14 +55,14 @@ export function RelatedPostsPicker({
           {selectedDetails.map((p) => (
             <div
               key={p.id}
-              className="flex items-center gap-2 px-3 py-2 bg-[--k-surface-2] rounded-lg text-sm group hover:bg-[--k-primary-2] transition"
+              className="flex items-center gap-2 px-3 py-2 bg-[var(--k-surface-2)] rounded-lg text-sm group hover:bg-[var(--k-primary-2)] transition"
             >
-              <FileText className="h-3.5 w-3.5 text-[--k-muted] shrink-0" />
-              <span className="flex-1 truncate text-[--k-text]">{p.titre}</span>
+              <FileText className="h-3.5 w-3.5 text-[var(--k-muted)] shrink-0" />
+              <span className="flex-1 truncate text-[var(--k-text)]">{p.titre}</span>
               <button
                 type="button"
                 onClick={() => remove(p.id)}
-                className="text-[--k-muted] hover:text-[--k-danger] opacity-0 group-hover:opacity-100 transition shrink-0"
+                className="text-[var(--k-muted)] hover:text-[var(--k-danger)] opacity-0 group-hover:opacity-100 transition shrink-0"
                 title="Retirer"
               >
                 <X className="h-3.5 w-3.5" />
@@ -71,22 +71,22 @@ export function RelatedPostsPicker({
           ))}
         </div>
       ) : (
-        <p className="text-xs text-[--k-muted] italic">Aucun article lié</p>
+        <p className="text-xs text-[var(--k-muted)] italic">Aucun article lié</p>
       )}
 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-[--k-primary] hover:underline"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--k-primary)] hover:underline"
       >
         <Link2 className="h-3.5 w-3.5" />
         {open ? "Fermer le sélecteur" : "Lier un article"}
       </button>
 
       {open && (
-        <div className="border border-[--k-border] rounded-lg p-3 space-y-2 bg-white shadow-sm">
+        <div className="border border-[var(--k-border)] rounded-lg p-3 space-y-2 bg-white shadow-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[--k-muted]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--k-muted)]" />
             <input
               className="input-field pl-9"
               placeholder="Rechercher un titre…"
@@ -97,12 +97,12 @@ export function RelatedPostsPicker({
           </div>
           <div className="max-h-64 overflow-y-auto">
             {isLoading && (
-              <p className="text-xs text-[--k-muted] py-2 text-center">
+              <p className="text-xs text-[var(--k-muted)] py-2 text-center">
                 Chargement…
               </p>
             )}
             {!isLoading && results.length === 0 && (
-              <p className="text-xs text-[--k-muted] py-3 text-center italic">
+              <p className="text-xs text-[var(--k-muted)] py-3 text-center italic">
                 Aucun résultat
               </p>
             )}
@@ -117,12 +117,12 @@ export function RelatedPostsPicker({
                     setSearch("");
                   }}
                   disabled={isSelected}
-                  className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-[--k-surface-2] disabled:opacity-50 flex items-center gap-2 transition"
+                  className="w-full text-left text-sm px-2 py-1.5 rounded hover:bg-[var(--k-surface-2)] disabled:opacity-50 flex items-center gap-2 transition"
                 >
-                  <FileText className="h-3.5 w-3.5 text-[--k-muted] shrink-0" />
+                  <FileText className="h-3.5 w-3.5 text-[var(--k-muted)] shrink-0" />
                   <span className="flex-1 truncate">{p.titre}</span>
                   {isSelected && (
-                    <span className="text-[10px] text-[--k-muted] shrink-0">
+                    <span className="text-[10px] text-[var(--k-muted)] shrink-0">
                       ajouté
                     </span>
                   )}

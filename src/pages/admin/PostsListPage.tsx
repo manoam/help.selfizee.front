@@ -43,14 +43,14 @@ export function PostsListPage() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[--k-text]">Documents</h1>
-          <p className="text-sm text-[--k-muted] mt-1">
+          <h1 className="text-2xl font-bold text-[var(--k-text)]">Documents</h1>
+          <p className="text-sm text-[var(--k-muted)] mt-1">
             {data.length} document{data.length > 1 ? "s" : ""} au total
           </p>
         </div>
         <Link
           to="/admin/posts/new"
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition shadow-sm shadow-[--k-primary]/30"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition shadow-sm shadow-[var(--k-primary)]/30"
         >
           <Plus className="h-4 w-4" />
           Nouveau document
@@ -60,7 +60,7 @@ export function PostsListPage() {
       {/* Filtres */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[--k-muted]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--k-muted)]" />
           <input
             className="input-field pl-9"
             placeholder="Rechercher par titre ou slug…"
@@ -82,19 +82,19 @@ export function PostsListPage() {
         </select>
       </div>
 
-      <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft overflow-hidden">
+      <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft overflow-hidden">
         {isLoading && (
-          <div className="p-8 text-center text-sm text-[--k-muted]">
+          <div className="p-8 text-center text-sm text-[var(--k-muted)]">
             Chargement…
           </div>
         )}
         {!isLoading && filtered.length === 0 && (
           <div className="p-12 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-3 text-[--k-muted] opacity-50" />
-            <p className="text-sm font-medium text-[--k-text]">
+            <FileText className="h-12 w-12 mx-auto mb-3 text-[var(--k-muted)] opacity-50" />
+            <p className="text-sm font-medium text-[var(--k-text)]">
               Aucun document
             </p>
-            <p className="text-xs text-[--k-muted] mt-1">
+            <p className="text-xs text-[var(--k-muted)] mt-1">
               {search || statusFilter
                 ? "Essayez d'élargir vos filtres."
                 : "Commencez par créer votre premier document."}
@@ -103,18 +103,18 @@ export function PostsListPage() {
         )}
         {!isLoading && filtered.length > 0 && (
           <table className="w-full text-sm">
-            <thead className="text-left border-b border-[--k-border] bg-[--k-surface-2]/40">
+            <thead className="text-left border-b border-[var(--k-border)] bg-[var(--k-surface-2)]/40">
               <tr>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Titre
                 </th>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Slug
                 </th>
-                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Statut
                 </th>
-                <th className="py-2.5 px-4 text-right text-xs font-semibold uppercase tracking-wide text-[--k-muted]">
+                <th className="py-2.5 px-4 text-right text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
                   Actions
                 </th>
               </tr>
@@ -125,14 +125,14 @@ export function PostsListPage() {
                 return (
                   <tr
                     key={p.id}
-                    className="border-b border-[--k-border] last:border-0 hover:bg-[--k-surface-2]/40 transition group"
+                    className="border-b border-[var(--k-border)] last:border-0 hover:bg-[var(--k-surface-2)]/40 transition group"
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-[--k-muted] shrink-0" />
+                        <FileText className="h-4 w-4 text-[var(--k-muted)] shrink-0" />
                         <Link
                           to={`/admin/posts/${p.id}`}
-                          className="font-medium text-[--k-text] hover:text-[--k-primary] transition truncate max-w-md"
+                          className="font-medium text-[var(--k-text)] hover:text-[var(--k-primary)] transition truncate max-w-md"
                         >
                           {p.titre}
                         </Link>
@@ -141,7 +141,7 @@ export function PostsListPage() {
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-[--k-muted] font-mono text-xs truncate max-w-[200px]">
+                    <td className="py-3 px-4 text-[var(--k-muted)] font-mono text-xs truncate max-w-[200px]">
                       {p.slug}
                     </td>
                     <td className="py-3 px-4">
@@ -158,7 +158,7 @@ export function PostsListPage() {
                             href={`/post/${p.slug}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-primary] hover:bg-[--k-primary-2] transition"
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-primary)] hover:bg-[var(--k-primary-2)] transition"
                             title="Voir la page publique"
                           >
                             <ExternalLink className="h-4 w-4" />
@@ -166,7 +166,7 @@ export function PostsListPage() {
                         )}
                         <Link
                           to={`/admin/posts/${p.id}`}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[--k-muted] hover:text-[--k-primary] hover:bg-[--k-primary-2] transition"
+                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-primary)] hover:bg-[var(--k-primary-2)] transition"
                           title="Éditer"
                         >
                           <Pencil className="h-4 w-4" />

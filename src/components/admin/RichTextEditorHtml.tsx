@@ -7,6 +7,7 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
+import { TextSelection } from "@tiptap/pm/state";
 
 import { HtmlBlock } from "./HtmlBlockExtension";
 import {
@@ -152,6 +153,18 @@ export function RichTextEditorHtml({
         { type: "htmlBlock", attrs: { html, kind } },
         { type: "paragraph" },
       ])
+      // Le node htmlBlock est atomique : après insertion, le curseur peut rester
+      // sur une NodeSelection du bloc. Taper Entrée dupliquerait alors le bloc au
+      // lieu de créer un paragraphe. On force une TextSelection (curseur texte)
+      // au plus près de la position courante — le paragraphe vide inséré juste
+      // après le bloc.
+      .command(({ tr, dispatch }) => {
+        if (dispatch) {
+          const near = TextSelection.near(tr.selection.$to, 1);
+          tr.setSelection(near);
+        }
+        return true;
+      })
       .run();
   };
 
@@ -187,8 +200,8 @@ export function RichTextEditorHtml({
   };
 
   return (
-    <div className="border border-[--k-border] rounded-lg overflow-hidden bg-white">
-      <div className="border-b border-[--k-border] bg-[--k-surface-2]/30 p-1.5 flex flex-wrap gap-0.5">
+    <div className="border border-[var(--k-border)] rounded-lg overflow-hidden bg-white">
+      <div className="border-b border-[var(--k-border)] bg-[var(--k-surface-2)]/30 p-1.5 flex flex-wrap gap-0.5">
         <ToolBtn
           icon={Bold}
           active={editor.isActive("bold")}
@@ -287,7 +300,7 @@ export function RichTextEditorHtml({
           disabled={!editor.can().redo()}
         />
         {uploadingRef.current && (
-          <span className="ml-auto inline-flex items-center gap-1.5 px-2 text-xs text-[--k-muted]">
+          <span className="ml-auto inline-flex items-center gap-1.5 px-2 text-xs text-[var(--k-muted)]">
             <Loader2 className="h-3 w-3 animate-spin" />
             Upload…
           </span>
@@ -321,7 +334,7 @@ export function RichTextEditorHtml({
       </div>
 
       {!value && placeholder && (
-        <div className="px-3 pb-2 text-xs text-[--k-muted] italic pointer-events-none">
+        <div className="px-3 pb-2 text-xs text-[var(--k-muted)] italic pointer-events-none">
           {placeholder}
         </div>
       )}
@@ -336,7 +349,7 @@ export function RichTextEditorHtml({
             <button
               type="button"
               onClick={() => setAccOpen(false)}
-              className="px-3 py-1.5 text-sm text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+              className="px-3 py-1.5 text-sm text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
             >
               Annuler
             </button>
@@ -344,7 +357,7 @@ export function RichTextEditorHtml({
               type="button"
               onClick={insertAccordion}
               disabled={!accTitle.trim()}
-              className="px-3 py-1.5 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition disabled:opacity-50"
             >
               Insérer
             </button>
@@ -353,7 +366,7 @@ export function RichTextEditorHtml({
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
               Titre
             </label>
             <input
@@ -365,7 +378,7 @@ export function RichTextEditorHtml({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
               Contenu
             </label>
             <textarea
@@ -389,7 +402,7 @@ export function RichTextEditorHtml({
             <button
               type="button"
               onClick={() => setMsgOpen(false)}
-              className="px-3 py-1.5 text-sm text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+              className="px-3 py-1.5 text-sm text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
             >
               Annuler
             </button>
@@ -397,7 +410,7 @@ export function RichTextEditorHtml({
               type="button"
               onClick={insertMessage}
               disabled={!msgContent.trim()}
-              className="px-3 py-1.5 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+              className="px-3 py-1.5 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition disabled:opacity-50"
             >
               Insérer
             </button>
@@ -406,7 +419,7 @@ export function RichTextEditorHtml({
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
               Type
             </label>
             <select
@@ -422,7 +435,7 @@ export function RichTextEditorHtml({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-[--k-text] mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
               Contenu
             </label>
             <textarea
@@ -501,8 +514,8 @@ function ToolBtn({
       title={title}
       className={`inline-flex items-center justify-center h-7 w-7 rounded transition ${
         active
-          ? "bg-[--k-primary] text-white"
-          : "text-[--k-text] hover:bg-[--k-surface-2]"
+          ? "bg-[var(--k-primary)] text-white"
+          : "text-[var(--k-text)] hover:bg-[var(--k-surface-2)]"
       } disabled:opacity-30 disabled:cursor-not-allowed`}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -511,5 +524,5 @@ function ToolBtn({
 }
 
 function Separator() {
-  return <span className="mx-0.5 h-7 w-px bg-[--k-border] self-center" />;
+  return <span className="mx-0.5 h-7 w-px bg-[var(--k-border)] self-center" />;
 }
