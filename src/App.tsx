@@ -41,10 +41,15 @@ const TagsAdminPage = lazy(() =>
     default: m.TagsAdminPage,
   })),
 );
+const ImportPage = lazy(() =>
+  import("./pages/admin/ImportPage").then((m) => ({
+    default: m.ImportPage,
+  })),
+);
 
 function LazyFallback() {
   return (
-    <div className="flex items-center justify-center h-screen text-sm text-[--k-muted]">
+    <div className="flex items-center justify-center h-screen text-sm text-[var(--k-muted)]">
       Chargement…
     </div>
   );
@@ -94,6 +99,7 @@ export function App() {
           <Route path="posts/new" element={<PostEditPage />} />
           <Route path="posts/:id" element={<PostEditPage />} />
           <Route path="tags" element={<TagsAdminPage />} />
+          <Route path="import" element={<ImportPage />} />
         </Route>
       </Route>
 

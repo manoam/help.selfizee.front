@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Plus, BarChart3, Sparkles, Tag as TagIcon } from "lucide-react";
+import {
+  FileText,
+  Plus,
+  BarChart3,
+  Sparkles,
+  Tag as TagIcon,
+  Database,
+} from "lucide-react";
 
 import { useMe } from "../../hooks/useAuth";
 import { api, type Post } from "../../lib/api";
@@ -25,10 +32,10 @@ export function DashboardPage() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[--k-text]">
+        <h1 className="text-2xl font-bold text-[var(--k-text)]">
           Bonjour {me?.name ?? me?.preferredUsername ?? me?.email ?? ""}
         </h1>
-        <p className="text-sm text-[--k-muted] mt-1">
+        <p className="text-sm text-[var(--k-muted)] mt-1">
           Voici un résumé de l'espace d'assistance.
         </p>
       </div>
@@ -60,31 +67,38 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft p-6">
-        <h2 className="text-sm font-semibold text-[--k-text] mb-3">
+      <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft p-6">
+        <h2 className="text-sm font-semibold text-[var(--k-text)] mb-3">
           Actions rapides
         </h2>
         <div className="flex flex-wrap gap-2">
           <Link
             to="/admin/posts/new"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[--k-primary] rounded-lg hover:brightness-110 transition shadow-sm shadow-[--k-primary]/30"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition shadow-sm shadow-[var(--k-primary)]/30"
           >
             <Plus className="h-4 w-4" />
             Nouveau document
           </Link>
           <Link
             to="/admin/posts"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
           >
             <FileText className="h-4 w-4" />
             Tous les documents
           </Link>
           <Link
             to="/admin/tags"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[--k-text] border border-[--k-border] bg-white rounded-lg hover:bg-[--k-surface-2] transition"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
           >
             <TagIcon className="h-4 w-4" />
             Gérer les tags
+          </Link>
+          <Link
+            to="/admin/import"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
+          >
+            <Database className="h-4 w-4" />
+            Importer le CRM
           </Link>
         </div>
       </div>
@@ -112,9 +126,9 @@ function StatCard({
 }) {
   const c = COLOR_MAP[color];
   return (
-    <div className="bg-white border border-[--k-border] rounded-xl2 shadow-soft p-4">
+    <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-[--k-muted] uppercase tracking-wide">
+        <span className="text-xs font-semibold text-[var(--k-muted)] uppercase tracking-wide">
           {label}
         </span>
         <span
@@ -123,7 +137,7 @@ function StatCard({
           <Icon className={`h-4 w-4 ${c.text}`} />
         </span>
       </div>
-      <div className="text-2xl font-bold text-[--k-text]">{value}</div>
+      <div className="text-2xl font-bold text-[var(--k-text)]">{value}</div>
     </div>
   );
 }
