@@ -120,28 +120,33 @@ export const Video = Node.create({
       video.className = "tiptap-video";
       // Contrôles natifs actifs : on peut lire/pauser pour choisir la vignette.
       video.setAttribute("controls", "controls");
-      video.setAttribute("preload", "metadata");
+      // preload=auto : charge assez de données pour afficher la frame de la
+      // vignette (metadata seul laisse un écran noir après le seek).
+      video.setAttribute("preload", "auto");
+      const t =
+        attrs.posterTime != null ? parseFloat(attrs.posterTime) : NaN;
+      const hasPoster = !Number.isNaN(t) && t > 0;
       if (attrs.src) {
         const source = document.createElement("source");
-        source.src = displaySrc(attrs.src);
+        // On met le #t=… directement dans l'URL (media fragment natif), comme
+        // côté public : le navigateur positionne l'aperçu tout seul.
+        source.src = displaySrc(attrs.src) + (hasPoster ? `#t=${t}` : "");
         video.appendChild(source);
       }
       if (attrs.width) video.setAttribute("width", String(attrs.width));
       if (attrs.height) video.setAttribute("height", String(attrs.height));
-      // Positionne l'aperçu au temps de la vignette enregistrée.
-      if (attrs.posterTime) {
-        const t = parseFloat(attrs.posterTime);
-        if (!Number.isNaN(t) && t > 0) {
-          const seek = () => {
-            try {
-              video.currentTime = t;
-            } catch {
-              /* ignore */
-            }
-          };
-          if (video.readyState >= 1) seek();
-          else video.addEventListener("loadedmetadata", seek, { once: true });
-        }
+      // Renfort JS : force le seek dès que possible (certains navigateurs
+      // n'appliquent pas le media fragment #t= sur <source> seul).
+      if (hasPoster) {
+        const seek = () => {
+          try {
+            if (video.currentTime < t) video.currentTime = t;
+          } catch {
+            /* ignore */
+          }
+        };
+        video.addEventListener("loadeddata", seek, { once: true });
+        if (video.readyState >= 2) seek();
       }
       dom.appendChild(video);
 
