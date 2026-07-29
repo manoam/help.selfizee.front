@@ -495,6 +495,14 @@ select.input-field {
   box-shadow: none !important;
   border: 0 !important;
 }
+/* Vidéos dans l'éditeur admin (extension Video) : bornées et visibles. */
+.tiptap-noring .ProseMirror video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
+  border-radius: 6px;
+}
 
 /* Scrollbar custom — repris du projet stock-management pour cohérence visuelle. */
 ::-webkit-scrollbar {

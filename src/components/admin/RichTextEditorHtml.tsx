@@ -10,6 +10,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import { TextSelection } from "@tiptap/pm/state";
 
 import { HtmlBlock } from "./HtmlBlockExtension";
+import { Video } from "./VideoExtension";
 import {
   Bold,
   Italic,
@@ -104,6 +105,7 @@ export function RichTextEditorHtml({
       // Extension custom : blocs HTML CRM (accordéon, info, note, attention)
       // rendus tels quels dans l'éditeur via NodeView (vrai rendu, pas placeholder).
       HtmlBlock,
+      Video,
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({
         openOnClick: false,
