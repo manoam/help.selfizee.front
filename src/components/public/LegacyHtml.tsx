@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { safeHtml } from "../../lib/sanitize";
 
 // Rend du HTML legacy du CRM (champs notice/intro/probleme, stockés en HTML brut)
@@ -18,6 +19,7 @@ export function LegacyHtml({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const root = ref.current;
@@ -25,20 +27,32 @@ export function LegacyHtml({
 
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const trigger = target.closest<HTMLElement>(
-        ".bootstrap-accordion-title, .panel-title a, [data-toggle='collapse']",
+
+      // 1) Accordéon : clic sur un titre -> bascule .is-open sur le .panel.
+      const accTrigger = target.closest<HTMLElement>(
+        ".bootstrap-accordion-title, [data-toggle='collapse']",
       );
-      if (!trigger || !root.contains(trigger)) return;
-      e.preventDefault();
-      // On bascule simplement .is-open sur le conteneur .panel : le CSS gère
-      // l'affichage du .panel-collapse et la rotation du chevron.
-      const panel = trigger.closest(".panel");
-      panel?.classList.toggle("is-open");
+      if (accTrigger && root.contains(accTrigger)) {
+        e.preventDefault();
+        accTrigger.closest(".panel")?.classList.toggle("is-open");
+        return;
+      }
+
+      // 2) Lien interne (issu des shortcodes [lien num_article=…]) : navigation
+      // SPA au lieu d'un rechargement complet de page.
+      const link = target.closest<HTMLAnchorElement>("a[href]");
+      if (link && root.contains(link)) {
+        const href = link.getAttribute("href") || "";
+        if (href.startsWith("/") && !href.startsWith("//")) {
+          e.preventDefault();
+          navigate(href);
+        }
+      }
     };
 
     root.addEventListener("click", onClick);
     return () => root.removeEventListener("click", onClick);
-  }, [html]);
+  }, [html, navigate]);
 
   if (!html) return null;
 
