@@ -133,6 +133,7 @@ export type CategoryAdminDto = {
   nom: string;
   slug: string;
   description: string | null;
+  iconeUrl: string | null;
   afficher: boolean;
   ordre: number;
   _count?: { subCategories: number; posts: number };

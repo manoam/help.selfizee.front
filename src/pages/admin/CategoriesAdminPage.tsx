@@ -1,6 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Save, X, AlertCircle, FolderTree } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Save,
+  X,
+  AlertCircle,
+  FolderTree,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Loader2,
+} from "lucide-react";
 
 import {
   api,
@@ -8,6 +20,7 @@ import {
   type SubCategoryDto,
   type SubSubCategoryDto,
 } from "../../lib/api";
+import { Modal } from "../../components/admin/Modal";
 
 type Level = "cat" | "sub" | "subsub";
 
@@ -57,8 +70,7 @@ export function CategoriesAdminPage() {
 function CategoriesTab() {
   const qc = useQueryClient();
   const [newName, setNewName] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editing, setEditing] = useState<CategoryAdminDto | null>(null);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-categories"],
@@ -79,14 +91,6 @@ function CategoriesTab() {
       invalidate();
     },
   });
-  const update = useMutation({
-    mutationFn: async ({ id, nom }: { id: number; nom: string }) =>
-      (await api.put(`/categories/${id}`, { nom })).data,
-    onSuccess: () => {
-      setEditingId(null);
-      invalidate();
-    },
-  });
   const remove = useMutation({
     mutationFn: async (id: number) => api.delete(`/categories/${id}`),
     onSuccess: invalidate,
@@ -102,37 +106,316 @@ function CategoriesTab() {
         pending={create.isPending}
         error={create.isError}
       />
-      <Table
-        isLoading={isLoading}
-        empty={rows.length === 0}
-        extraCols={["Sous-cat.", "Fiches"]}
-      >
-        {rows.map((r) => (
-          <Row
-            key={r.id}
-            name={r.nom}
-            slug={r.slug}
-            editing={editingId === r.id}
-            editName={editName}
-            onEditNameChange={setEditName}
-            onStartEdit={() => {
-              setEditingId(r.id);
-              setEditName(r.nom);
-            }}
-            onSave={() => update.mutate({ id: r.id, nom: editName })}
-            onCancel={() => setEditingId(null)}
-            onDelete={() => {
-              if (
-                confirm(
-                  `Supprimer la catégorie "${r.nom}" ? Ses sous-catégories et sous-sous-catégories seront aussi supprimées.`,
-                )
-              )
-                remove.mutate(r.id);
-            }}
-            extra={[r._count?.subCategories ?? 0, r._count?.posts ?? 0]}
+
+      <div className="bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft overflow-hidden">
+        {isLoading && (
+          <div className="p-8 text-center text-sm text-[var(--k-muted)]">
+            Chargement…
+          </div>
+        )}
+        {!isLoading && rows.length === 0 && (
+          <div className="p-12 text-center">
+            <FolderTree className="h-12 w-12 mx-auto mb-3 text-[var(--k-muted)] opacity-50" />
+            <p className="text-sm font-medium text-[var(--k-text)]">
+              Aucune catégorie
+            </p>
+          </div>
+        )}
+        {!isLoading && rows.length > 0 && (
+          <table className="w-full text-sm">
+            <thead className="text-left border-b border-[var(--k-border)] bg-[var(--k-surface-2)]/40">
+              <tr>
+                <Th>Icône</Th>
+                <Th>Nom</Th>
+                <Th>Slug</Th>
+                <Th>Sous-cat.</Th>
+                <Th>Fiches</Th>
+                <Th>Visible</Th>
+                <th className="py-2.5 px-4 text-right text-xs font-semibold uppercase tracking-wide text-[var(--k-muted)]">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.id}
+                  className="border-b border-[var(--k-border)] last:border-0 hover:bg-[var(--k-surface-2)]/40 transition group"
+                >
+                  <td className="py-3 px-4">
+                    {r.iconeUrl ? (
+                      <img
+                        src={`${api.defaults.baseURL ?? ""}${r.iconeUrl}`}
+                        alt=""
+                        className="h-8 w-8 rounded object-cover border border-[var(--k-border)]"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded bg-[var(--k-surface-2)] flex items-center justify-center">
+                        <ImageIcon className="h-4 w-4 text-[var(--k-muted)] opacity-50" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 font-medium text-[var(--k-text)]">
+                    {r.nom}
+                  </td>
+                  <td className="py-3 px-4 text-[var(--k-muted)] font-mono text-xs">
+                    {r.slug}
+                  </td>
+                  <td className="py-3 px-4 text-[var(--k-muted)]">
+                    {r._count?.subCategories ?? 0}
+                  </td>
+                  <td className="py-3 px-4 text-[var(--k-muted)]">
+                    {r._count?.posts ?? 0}
+                  </td>
+                  <td className="py-3 px-4">
+                    {r.afficher ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                        <Eye className="h-3 w-3" /> Affichée
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--k-muted)] bg-[var(--k-surface-2)] px-2 py-0.5 rounded-full">
+                        <EyeOff className="h-3 w-3" /> Masquée
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <button
+                        type="button"
+                        onClick={() => setEditing(r)}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-primary)] hover:bg-[var(--k-primary-2)] transition"
+                        title="Modifier"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Supprimer la catégorie "${r.nom}" ? Ses sous-catégories et sous-sous-catégories seront aussi supprimées.`,
+                            )
+                          )
+                            remove.mutate(r.id);
+                        }}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md text-[var(--k-muted)] hover:text-[var(--k-danger)] hover:bg-red-50 transition"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <CategoryEditModal
+        category={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          invalidate();
+        }}
+      />
+    </div>
+  );
+}
+
+// Modal d'édition d'une catégorie : nom, slug, description, icône (upload),
+// visibilité (afficher). Reproduit les champs du CRM (icone_name + afficher).
+function CategoryEditModal({
+  category,
+  onClose,
+  onSaved,
+}: {
+  category: CategoryAdminDto | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [nom, setNom] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [iconeUrl, setIconeUrl] = useState<string | null>(null);
+  const [afficher, setAfficher] = useState(true);
+  const [uploading, setUploading] = useState(false);
+
+  // Réinitialise le formulaire à chaque ouverture (nouvelle catégorie).
+  useEffect(() => {
+    if (!category) return;
+    setNom(category.nom);
+    setSlug(category.slug);
+    setDescription(category.description ?? "");
+    setIconeUrl(category.iconeUrl);
+    setAfficher(category.afficher);
+  }, [category]);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!category) return;
+      return (
+        await api.put(`/categories/${category.id}`, {
+          nom,
+          slug: slug || undefined,
+          description: description || null,
+          iconeUrl,
+          afficher,
+        })
+      ).data;
+    },
+    onSuccess: onSaved,
+  });
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await api.post<{ url: string }>("/upload/image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setIconeUrl(data.url);
+    } catch {
+      alert("Upload échoué (image trop lourde ou format non supporté).");
+    } finally {
+      setUploading(false);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  };
+
+  return (
+    <Modal
+      open={category !== null}
+      onClose={onClose}
+      title="Modifier la catégorie"
+      footer={
+        <>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 text-sm text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={() => save.mutate()}
+            disabled={!nom.trim() || save.isPending || uploading}
+            className="px-3 py-1.5 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+          >
+            Enregistrer
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Nom">
+          <input
+            className="input-field"
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            autoFocus
           />
-        ))}
-      </Table>
+        </Field>
+        <Field label="Slug (laisser vide pour auto-générer)">
+          <input
+            className="input-field font-mono text-xs"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="auto depuis le nom"
+          />
+        </Field>
+        <Field label="Description">
+          <textarea
+            className="input-field"
+            rows={2}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Field>
+
+        <Field label="Icône">
+          <div className="flex items-center gap-3">
+            {iconeUrl ? (
+              <img
+                src={`${api.defaults.baseURL ?? ""}${iconeUrl}`}
+                alt=""
+                className="h-14 w-14 rounded object-cover border border-[var(--k-border)]"
+              />
+            ) : (
+              <div className="h-14 w-14 rounded bg-[var(--k-surface-2)] flex items-center justify-center">
+                <ImageIcon className="h-5 w-5 text-[var(--k-muted)] opacity-50" />
+              </div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                disabled={uploading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ImageIcon className="h-4 w-4" />
+                )}
+                {iconeUrl ? "Changer l'image" : "Choisir une image"}
+              </button>
+              {iconeUrl && (
+                <button
+                  type="button"
+                  onClick={() => setIconeUrl(null)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-xs text-[var(--k-danger)] hover:underline"
+                >
+                  <Trash2 className="h-3 w-3" /> Retirer l'image
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleUpload(f);
+              }}
+            />
+          </div>
+        </Field>
+
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={afficher}
+            onChange={(e) => setAfficher(e.target.checked)}
+            className="h-4 w-4 rounded border-[var(--k-border)] accent-[var(--k-primary)]"
+          />
+          <span className="text-sm text-[var(--k-text)]">
+            Afficher cette catégorie sur le site public
+          </span>
+        </label>
+      </div>
+    </Modal>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-[var(--k-text)] mb-1.5">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
