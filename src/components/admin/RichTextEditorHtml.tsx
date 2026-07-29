@@ -42,6 +42,28 @@ const MESSAGE_LABEL: Record<MessageType, string> = {
   attention: "Attention (rouge)",
 };
 
+// Les images du contenu sont servies par l'API (/uploads/...), pas par le front.
+// Dans l'éditeur on doit préfixer les src relatifs par l'URL de l'API pour les
+// AFFICHER ; mais on stocke du RELATIF en base (portable si le NDD change). D'où
+// deux conversions : display (préfixe) au chargement, storage (retire) au save.
+const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
+// Chemins servis par l'API : /uploads/ (images rapatriées) et /upload/ (uploads
+// WYSIWYG). On les préfixe pour l'affichage, on les remet en relatif au save.
+// Pour l'affichage : /uploads.. ou /upload.. -> {API_BASE}/uploads..
+function toDisplay(html: string): string {
+  if (!API_BASE) return html;
+  return html.replace(
+    /(src|href)=("|')(\/uploads?\/)/gi,
+    (_m, attr, q, p) => `${attr}=${q}${API_BASE}${p}`,
+  );
+}
+// Pour le stockage : {API_BASE}/uploads.. -> /uploads.. (relatif).
+function toStorage(html: string): string {
+  if (!API_BASE) return html;
+  const escaped = API_BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return html.replace(new RegExp(`${escaped}(/uploads?/)`, "gi"), "$1");
+}
+
 
 type Props = {
   value: string | null;
@@ -93,11 +115,12 @@ export function RichTextEditorHtml({
       TableCell,
       TableHeader,
     ],
-    content: value ?? "",
+    content: toDisplay(value ?? ""),
     onUpdate({ editor }) {
       // Post-traite le HTML : remplace les wrappers <div data-html-content>
-      // par le HTML brut décodé (le vrai accordéon, message, etc.).
-      onChange(rehydrateBlocks(editor.getHTML()));
+      // par le HTML brut décodé (le vrai accordéon, message, etc.). On retire
+      // le préfixe API des images pour stocker du relatif en base.
+      onChange(toStorage(rehydrateBlocks(editor.getHTML())));
     },
   });
 
@@ -113,10 +136,13 @@ export function RichTextEditorHtml({
     if (!editor) return;
     const next = value ?? "";
     if (editor.isFocused) return;
-    const current = rehydrateBlocks(editor.getHTML());
+    // On compare en "storage" (relatif) : getHTML est en display (préfixé), on le
+    // ramène au relatif pour comparer à `value` qui est relatif.
+    const current = toStorage(rehydrateBlocks(editor.getHTML()));
     if (current === next) return;
+    // On charge en "display" (préfixé) pour afficher les images dans l'éditeur.
     // emitUpdate:false -> ne redéclenche pas onUpdate (pas de remontée parasite).
-    editor.commands.setContent(next, false);
+    editor.commands.setContent(toDisplay(next), false);
   }, [value, editor]);
 
   if (!editor) return null;

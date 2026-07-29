@@ -11,8 +11,9 @@ import { api } from "../../lib/api";
 const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
 function prefixUploads(html: string): string {
   if (!API_BASE) return html;
+  // Cible /uploads/ (images rapatriées) et /upload/ (uploads WYSIWYG).
   return html.replace(
-    /(src|href)=("|')(\/uploads\/)/gi,
+    /(src|href)=("|')(\/uploads?\/)/gi,
     (_m, attr, quote, pathStart) => `${attr}=${quote}${API_BASE}${pathStart}`,
   );
 }
