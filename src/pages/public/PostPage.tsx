@@ -179,7 +179,7 @@ export function PostPage() {
                 {post.question && (
                   <a
                     href="#formulations"
-                    className="inline-block mt-1 text-sm text-[var(--a-accent)] underline"
+                    className="inline-block mt-1 text-sm text-[#2563eb] no-underline hover:underline"
                   >
                     Voir les formulations
                   </a>

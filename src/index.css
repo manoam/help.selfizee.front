@@ -178,6 +178,11 @@ select.input-field {
   border-radius: 15px;
   padding: 15px 20px;
 }
+/* Le contenu (LegacyHtml) commence par un <p> avec sa marge par défaut, ce qui
+   décalait le texte vers le bas et le désalignait de l'icône. On supprime la
+   marge du premier/dernier bloc pour aligner le texte avec l'icône. */
+.a-problematique .a-html-content > *:first-child { margin-top: 0; }
+.a-problematique .a-html-content > *:last-child { margin-bottom: 0; }
 
 /* Bloc contenu repliable "Afficher plus / moins" (repris du CRM : bouton gris). */
 .a-collapsible {
