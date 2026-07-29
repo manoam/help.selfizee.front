@@ -516,35 +516,34 @@ select.input-field {
   border-radius: 6px;
   background: #000;
 }
-/* Overlay qui capte le clic (empêche la lecture, permet la sélection). */
-.tiptap-video-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  cursor: pointer;
-  border-radius: 6px;
-}
-.tiptap-video-badge {
-  margin: 8px;
+/* Bouton "Définir la vignette ici" (enregistre le temps de pause = #t=…). */
+.tiptap-video-poster {
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 500;
+  color: var(--k-text);
+  background: var(--k-surface-2);
+  border: 1px solid var(--k-border);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tiptap-video-poster:hover {
+  background: var(--k-primary);
   color: #fff;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 999px;
-  pointer-events: none;
+  border-color: var(--k-primary);
 }
 /* Barre d'outils (dimensions + suppression) au survol / sélection. */
 .tiptap-video-toolbar {
   position: absolute;
-  top: -12px;
+  top: -14px;
+  left: 8px;
   right: 8px;
   display: none;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px;
+  padding: 4px 8px;
   background: #fff;
   border: 1px solid var(--k-border);
   border-radius: 8px;

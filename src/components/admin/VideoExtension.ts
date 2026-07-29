@@ -19,7 +19,10 @@ export const Video = Node.create({
 
   addAttributes() {
     return {
+      // src SANS le fragment #t=… (stocké à part dans posterTime).
       src: { default: null },
+      // Temps (en secondes) de la vignette de départ -> devient #t=… au rendu.
+      posterTime: { default: null },
       width: { default: null },
       height: { default: null },
     };
@@ -33,10 +36,16 @@ export const Video = Node.create({
           if (typeof dom === "string") return {};
           const el = dom as HTMLElement;
           const source = el.querySelector("source");
-          const src =
-            el.getAttribute("src") || source?.getAttribute("src") || null;
+          const rawSrc =
+            el.getAttribute("src") || source?.getAttribute("src") || "";
+          // Sépare le fragment #t=… (media fragment = vignette de départ).
+          const hashIdx = rawSrc.indexOf("#t=");
+          const src = hashIdx >= 0 ? rawSrc.slice(0, hashIdx) : rawSrc || null;
+          const posterTime =
+            hashIdx >= 0 ? rawSrc.slice(hashIdx + 3) || null : null;
           return {
             src,
+            posterTime,
             width: el.getAttribute("width"),
             height: el.getAttribute("height"),
           };
@@ -48,9 +57,16 @@ export const Video = Node.create({
   renderHTML({ HTMLAttributes, node }) {
     const attrs = node.attrs as {
       src?: string | null;
+      posterTime?: string | null;
       width?: string | null;
       height?: string | null;
     };
+    // Recompose src#t=… (comme le CRM) pour que le public affiche la vignette.
+    const fullSrc = attrs.src
+      ? attrs.posterTime
+        ? `${attrs.src}#t=${attrs.posterTime}`
+        : attrs.src
+      : null;
     return [
       "video",
       mergeAttributes(HTMLAttributes, {
@@ -58,7 +74,7 @@ export const Video = Node.create({
         ...(attrs.width ? { width: attrs.width } : {}),
         ...(attrs.height ? { height: attrs.height } : {}),
       }),
-      attrs.src ? ["source", { src: attrs.src }] : ["source", {}],
+      fullSrc ? ["source", { src: fullSrc }] : ["source", {}],
     ];
   },
 
@@ -66,8 +82,22 @@ export const Video = Node.create({
     return ({ node, getPos, editor }) => {
       const attrs = node.attrs as {
         src?: string | null;
+        posterTime?: string | null;
         width?: string | null;
         height?: string | null;
+      };
+
+      const setAttr = (patch: Record<string, unknown>) => {
+        const pos = typeof getPos === "function" ? getPos() : null;
+        if (pos == null) return;
+        editor
+          .chain()
+          .focus()
+          .command(({ tr }) => {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, ...patch });
+            return true;
+          })
+          .run();
       };
 
       const dom = document.createElement("div");
@@ -76,9 +106,9 @@ export const Video = Node.create({
 
       const video = document.createElement("video");
       video.className = "tiptap-video";
-      // Pas de `controls` dans l'éditeur : on ne veut pas jouer, mais manipuler.
+      // Contrôles natifs actifs : on peut lire/pauser pour choisir la vignette.
+      video.setAttribute("controls", "controls");
       video.setAttribute("preload", "metadata");
-      video.muted = true;
       if (attrs.src) {
         const source = document.createElement("source");
         source.src = attrs.src;
@@ -86,28 +116,47 @@ export const Video = Node.create({
       }
       if (attrs.width) video.setAttribute("width", String(attrs.width));
       if (attrs.height) video.setAttribute("height", String(attrs.height));
+      // Positionne l'aperçu au temps de la vignette enregistrée.
+      if (attrs.posterTime) {
+        const t = parseFloat(attrs.posterTime);
+        if (!Number.isNaN(t)) {
+          video.addEventListener(
+            "loadedmetadata",
+            () => {
+              try {
+                video.currentTime = t;
+              } catch {
+                /* ignore */
+              }
+            },
+            { once: true },
+          );
+        }
+      }
       dom.appendChild(video);
 
-      // Overlay transparent : capte le clic pour SÉLECTIONNER le node (au lieu
-      // de laisser la vidéo réagir). Double-clic ouvre l'aperçu réel.
-      const overlay = document.createElement("div");
-      overlay.className = "tiptap-video-overlay";
-      overlay.innerHTML =
-        '<span class="tiptap-video-badge">▶ Vidéo — cliquer pour sélectionner</span>';
-      overlay.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        const pos = typeof getPos === "function" ? getPos() : null;
-        if (pos != null) {
-          editor.commands.setNodeSelection(pos);
-          editor.commands.focus();
-        }
-      });
-      dom.appendChild(overlay);
-
-      // Barre d'outils (visible quand le bloc est survolé/sélectionné) :
-      // dimensions + suppression.
+      // Barre d'outils (au survol / sélection).
       const toolbar = document.createElement("div");
       toolbar.className = "tiptap-video-toolbar";
+
+      // Bouton "Vignette ici" : enregistre le temps courant comme #t=…
+      const poster = document.createElement("button");
+      poster.type = "button";
+      poster.className = "tiptap-video-poster";
+      const posterLabel = () =>
+        attrs.posterTime
+          ? `📌 Vignette : ${attrs.posterTime}s`
+          : "📌 Définir la vignette ici";
+      poster.textContent = posterLabel();
+      poster.title =
+        "Mettez la vidéo en pause sur l'image voulue, puis cliquez pour l'enregistrer comme vignette de départ.";
+      poster.addEventListener("mousedown", (e) => e.stopPropagation());
+      poster.addEventListener("click", (e) => {
+        e.preventDefault();
+        const t = Math.round(video.currentTime * 10) / 10; // arrondi 0.1s
+        setAttr({ posterTime: t > 0 ? String(t) : null });
+      });
+      toolbar.appendChild(poster);
 
       const mkDim = (
         label: string,
@@ -124,20 +173,8 @@ export const Video = Node.create({
         input.value = value != null ? String(value) : "";
         input.addEventListener("mousedown", (e) => e.stopPropagation());
         input.addEventListener("change", () => {
-          const pos = typeof getPos === "function" ? getPos() : null;
-          if (pos == null) return;
           const v = input.value.trim();
-          editor
-            .chain()
-            .focus()
-            .command(({ tr }) => {
-              tr.setNodeMarkup(pos, undefined, {
-                ...node.attrs,
-                [key]: v === "" ? null : v,
-              });
-              return true;
-            })
-            .run();
+          setAttr({ [key]: v === "" ? null : v });
         });
         wrap.appendChild(input);
         return wrap;
