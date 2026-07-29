@@ -151,6 +151,27 @@ select.input-field {
 .a-pill:hover {
   background: #e2e2e2;
 }
+
+/* Case de sous-sous-catégorie (navigation), reproduit .btn-sous-sous-category
+   du CRM : fond #f1f1f1, texte à gauche, padding généreux, 3 par ligne. */
+.a-subsub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  min-height: 44px;
+  border-radius: 6px;
+  background: #f1f1f1;
+  color: #000;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.15s;
+}
+.a-subsub:hover {
+  background: #e2e2e2;
+}
 .a-problematique {
   background: var(--a-accent-soft);
   border: 1px solid var(--a-accent-border);
@@ -298,23 +319,60 @@ select.input-field {
   display: flex;
   align-items: center;
 }
+.bootstrap-accordion .panel-heading:hover {
+  background: #e8e9e8;
+}
 .bootstrap-accordion .panel-title {
   margin: 10px;
-  width: 90%;
+  width: 100%;
 }
 .bootstrap-accordion .bootstrap-accordion-title {
   cursor: pointer;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   text-decoration: none;
   color: inherit;
   font-weight: 500;
 }
+/* Chevron d'affordance (remplace le toggle-icon Bootstrap du CRM). */
+.bootstrap-accordion .bootstrap-accordion-title::after {
+  content: "";
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #54667a;
+  border-bottom: 2px solid #54667a;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.bootstrap-accordion .bootstrap-accordion-title.is-open::after {
+  transform: rotate(-135deg);
+}
 .bootstrap-accordion .panel-collapse {
-  padding: 35px;
-  background-color: #f1f1f1;
+  padding: 12px 16px;
+  background-color: #fafafa;
+  border-top: 1px solid #e2e2e2;
+  /* Tailwind v4 génère une utility .collapse { visibility: collapse } (pour les
+     lignes de tableau). Le HTML legacy du CRM utilise class="panel-collapse
+     collapse", ce qui rendait TOUT le contenu invisible. On rétablit la
+     visibilité : c'est display (règle ci-dessous) qui gère l'ouverture. */
+  visibility: visible;
 }
 .bootstrap-accordion .panel-collapse.collapse:not(.in) {
   display: none;
+}
+/* Les panneaux "vides" du legacy (juste &nbsp;) ne doivent pas ajouter de blanc. */
+.bootstrap-accordion .panel-body {
+  padding: 0;
+}
+.bootstrap-accordion .panel-body:empty {
+  display: none;
+}
+.bootstrap-accordion .panel-body img {
+  max-width: 100%;
+  height: auto;
 }
 .bootstrap-accordion-content h1 { font-size: 20px; }
 .bootstrap-accordion-content h2 { font-size: 18px; }
@@ -372,6 +430,17 @@ select.input-field {
 }
 .tiptap-html-block-content > * {
   margin: 0;
+}
+/* Dans l'éditeur, l'accordéon n'a pas de mécanique de repli (pas de JS toggle) :
+   on force l'affichage du contenu du panneau, sinon la règle globale
+   .panel-collapse.collapse:not(.in){display:none} le cacherait et l'admin ne
+   verrait qu'un titre vide. */
+.tiptap-html-block-content .panel-collapse.collapse {
+  display: block !important;
+  visibility: visible !important;
+}
+.tiptap-html-block-content .bootstrap-accordion-title::after {
+  display: none;
 }
 .tiptap-html-block-delete {
   position: absolute;

@@ -25,7 +25,7 @@ import {
 import { api, type PostDetail } from "../../lib/api";
 import { RichTextViewer } from "../../components/RichTextViewer";
 import { EmojiVote } from "../../components/public/EmojiVote";
-import { safeHtml } from "../../lib/sanitize";
+import { LegacyHtml } from "../../components/public/LegacyHtml";
 
 type ViewTab = "client" | "callcenter" | "interne";
 
@@ -175,10 +175,7 @@ export function PostPage() {
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-[var(--a-accent)] mt-1 shrink-0" />
               <div className="flex-1">
-                <div
-                  className="a-html-content"
-                  dangerouslySetInnerHTML={{ __html: safeHtml(post.descriptionProbleme) }}
-                />
+                <LegacyHtml html={post.descriptionProbleme} />
                 {post.question && (
                   <a
                     href="#formulations"
@@ -243,10 +240,7 @@ export function PostPage() {
             className="mt-8 pt-6 border-t border-[var(--a-surface-2)] scroll-mt-24"
           >
             <h3 className="a-title-accent text-base mb-3">Formulations :</h3>
-            <div
-              className="a-html-content"
-              dangerouslySetInnerHTML={{ __html: safeHtml(post.question) }}
-            />
+            <LegacyHtml html={post.question} />
           </div>
         )}
 
@@ -356,16 +350,10 @@ function ViewContent({
   return (
     <Collapsible>
       <div className="a-html-content space-y-4">
-        {intro && (
-          <div dangerouslySetInnerHTML={{ __html: safeHtml(intro) }} />
-        )}
-        {contenu && (
-          <div dangerouslySetInnerHTML={{ __html: safeHtml(contenu) }} />
-        )}
+        {intro && <LegacyHtml html={intro} className="" />}
+        {contenu && <LegacyHtml html={contenu} className="" />}
         {hasTiptapContent && <RichTextViewer content={contenuTipTap} />}
-        {probleme && (
-          <div dangerouslySetInnerHTML={{ __html: safeHtml(probleme) }} />
-        )}
+        {probleme && <LegacyHtml html={probleme} className="" />}
       </div>
     </Collapsible>
   );

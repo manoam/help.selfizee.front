@@ -143,11 +143,11 @@ export function CategoryPage() {
                     <Link
                       key={ssc.id}
                       to={`/sous-sous-categorie/${ssc.slug}`}
-                      className="a-pill hover:bg-[var(--a-surface-3)] justify-between"
+                      className="a-subsub"
                     >
                       <span className="truncate">{ssc.nom}</span>
                       {ssc._count?.posts !== undefined && (
-                        <span className="text-xs text-[var(--a-text-muted)]">
+                        <span className="text-[var(--a-text-muted)] shrink-0">
                           ({ssc._count.posts})
                         </span>
                       )}
