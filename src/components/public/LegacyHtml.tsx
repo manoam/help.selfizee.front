@@ -1,6 +1,20 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { safeHtml } from "../../lib/sanitize";
+import { api } from "../../lib/api";
+
+// Les images du contenu sont servies par l'API (/uploads/posts/...), pas par le
+// front. Comme le HTML est rendu tel quel, on préfixe les src/href="/uploads..."
+// par l'URL de base de l'API, sinon le navigateur les charge depuis le front
+// (qui renvoie index.html -> image cassée).
+const API_BASE = api.defaults.baseURL ?? "";
+function prefixUploads(html: string): string {
+  if (!API_BASE) return html;
+  return html.replace(
+    /(src|href)=("|')(\/uploads\/)/gi,
+    (_m, attr, quote, pathStart) => `${attr}=${quote}${API_BASE}${pathStart}`,
+  );
+}
 
 // Rend du HTML legacy du CRM (champs notice/intro/probleme, stockés en HTML brut)
 // et réactive les accordéons Bootstrap « bootstrap-accordion ».
@@ -67,7 +81,7 @@ export function LegacyHtml({
     <div
       ref={ref}
       className={className}
-      dangerouslySetInnerHTML={{ __html: safeHtml(html) }}
+      dangerouslySetInnerHTML={{ __html: prefixUploads(safeHtml(html)) }}
     />
   );
 }
