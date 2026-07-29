@@ -7,7 +7,8 @@ import { api } from "../../lib/api";
 // front. Comme le HTML est rendu tel quel, on préfixe les src/href="/uploads..."
 // par l'URL de base de l'API, sinon le navigateur les charge depuis le front
 // (qui renvoie index.html -> image cassée).
-const API_BASE = api.defaults.baseURL ?? "";
+// baseURL sans slash final, pour éviter un double slash quand on concatène /uploads.
+const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
 function prefixUploads(html: string): string {
   if (!API_BASE) return html;
   return html.replace(
