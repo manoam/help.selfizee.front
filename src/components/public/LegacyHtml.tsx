@@ -39,11 +39,18 @@ export function LegacyHtml({
       }
 
       // 2) Lien interne (issu des shortcodes [lien num_article=…]) : navigation
-      // SPA au lieu d'un rechargement complet de page.
+      // SPA au lieu d'un rechargement complet. On laisse le comportement natif
+      // pour les liens target="_blank" (ouverture dans un nouvel onglet) et les
+      // clics avec modificateur (Ctrl/Cmd/clic milieu = nouvel onglet).
       const link = target.closest<HTMLAnchorElement>("a[href]");
       if (link && root.contains(link)) {
+        const opensNewTab =
+          link.target === "_blank" ||
+          e.ctrlKey ||
+          e.metaKey ||
+          e.button === 1;
         const href = link.getAttribute("href") || "";
-        if (href.startsWith("/") && !href.startsWith("//")) {
+        if (!opensNewTab && href.startsWith("/") && !href.startsWith("//")) {
           e.preventDefault();
           navigate(href);
         }

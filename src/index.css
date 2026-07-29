@@ -268,7 +268,8 @@ select.input-field {
 .a-html-content ul,
 .a-html-content ol { margin: 0.75rem 0; padding-left: 1.5rem; }
 .a-html-content li { margin: 0.25rem 0; }
-.a-html-content a { color: var(--a-accent); text-decoration: underline; }
+.a-html-content a { color: #2563eb; text-decoration: none; }
+.a-html-content a:hover { text-decoration: underline; }
 .a-html-content img,
 .a-html-content video {
   max-width: 70%;
