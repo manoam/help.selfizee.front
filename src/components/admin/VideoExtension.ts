@@ -1,6 +1,18 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import type { NodeViewRenderer } from "@tiptap/core";
 
+import { api } from "../../lib/api";
+
+// Les vidéos sont servies par l'API (/uploads/...), pas par le front. Dans le
+// NodeView on charge donc la vidéo depuis l'URL de l'API, sinon elle se charge
+// depuis le front admin (index.html) et ne s'affiche pas (pas de metadata ->
+// pas de vignette). Le src stocké en base reste relatif (cf. toStorage).
+const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
+function displaySrc(src: string): string {
+  if (!API_BASE) return src;
+  return src.replace(/^(\/uploads?\/)/i, `${API_BASE}$1`);
+}
+
 // Extension TipTap pour la balise <video> (contenu legacy CRM). Sans elle,
 // TipTap ne connaît pas <video>/<source> et les supprime au parsing.
 //
@@ -111,7 +123,7 @@ export const Video = Node.create({
       video.setAttribute("preload", "metadata");
       if (attrs.src) {
         const source = document.createElement("source");
-        source.src = attrs.src;
+        source.src = displaySrc(attrs.src);
         video.appendChild(source);
       }
       if (attrs.width) video.setAttribute("width", String(attrs.width));
@@ -119,18 +131,16 @@ export const Video = Node.create({
       // Positionne l'aperçu au temps de la vignette enregistrée.
       if (attrs.posterTime) {
         const t = parseFloat(attrs.posterTime);
-        if (!Number.isNaN(t)) {
-          video.addEventListener(
-            "loadedmetadata",
-            () => {
-              try {
-                video.currentTime = t;
-              } catch {
-                /* ignore */
-              }
-            },
-            { once: true },
-          );
+        if (!Number.isNaN(t) && t > 0) {
+          const seek = () => {
+            try {
+              video.currentTime = t;
+            } catch {
+              /* ignore */
+            }
+          };
+          if (video.readyState >= 1) seek();
+          else video.addEventListener("loadedmetadata", seek, { once: true });
         }
       }
       dom.appendChild(video);
