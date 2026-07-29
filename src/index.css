@@ -347,21 +347,28 @@ select.input-field {
   transform: rotate(45deg);
   transition: transform 0.2s ease;
 }
-.bootstrap-accordion .bootstrap-accordion-title.is-open::after {
+.bootstrap-accordion.is-open .bootstrap-accordion-title::after {
   transform: rotate(-135deg);
 }
+/* Le HTML legacy du CRM utilise class="panel-collapse collapse". Tailwind v4
+   génère une utility .collapse { visibility: collapse } qui rendait tout le
+   contenu invisible. Comme cette utility n'est utilisée nulle part dans l'app,
+   on la neutralise à la source, ce qui évite d'avoir à la contrer partout. */
+.collapse {
+  visibility: visible;
+}
+/* Ouverture/fermeture pilotée par la classe .is-open posée sur le titre par le
+   JS (LegacyHtml) : le panneau frère (.panel-collapse) est masqué par défaut et
+   affiché quand l'en-tête parent est ouvert. Plus robuste que de résoudre
+   href="#collapse-X" -> id. */
 .bootstrap-accordion .panel-collapse {
+  display: none;
   padding: 12px 16px;
   background-color: #fafafa;
   border-top: 1px solid #e2e2e2;
-  /* Tailwind v4 génère une utility .collapse { visibility: collapse } (pour les
-     lignes de tableau). Le HTML legacy du CRM utilise class="panel-collapse
-     collapse", ce qui rendait TOUT le contenu invisible. On rétablit la
-     visibilité : c'est display (règle ci-dessous) qui gère l'ouverture. */
-  visibility: visible;
 }
-.bootstrap-accordion .panel-collapse.collapse:not(.in) {
-  display: none;
+.bootstrap-accordion.is-open .panel-collapse {
+  display: block;
 }
 /* Les panneaux "vides" du legacy (juste &nbsp;) ne doivent pas ajouter de blanc. */
 .bootstrap-accordion .panel-body {
@@ -433,11 +440,10 @@ select.input-field {
 }
 /* Dans l'éditeur, l'accordéon n'a pas de mécanique de repli (pas de JS toggle) :
    on force l'affichage du contenu du panneau, sinon la règle globale
-   .panel-collapse.collapse:not(.in){display:none} le cacherait et l'admin ne
+   .bootstrap-accordion .panel-collapse{display:none} le cacherait et l'admin ne
    verrait qu'un titre vide. */
-.tiptap-html-block-content .panel-collapse.collapse {
+.tiptap-html-block-content .panel-collapse {
   display: block !important;
-  visibility: visible !important;
 }
 .tiptap-html-block-content .bootstrap-accordion-title::after {
   display: none;
