@@ -41,6 +41,29 @@ export function LegacyHtml({
     const root = ref.current;
     if (!root) return;
 
+    // Vignette vidéo : le CRM stocke le temps de départ en #t=… sur la <source>.
+    // Beaucoup de navigateurs n'affichent pas la frame correspondante au
+    // chargement (écran noir). On force preload=metadata puis on positionne la
+    // vidéo sur ce temps -> la vignette s'affiche.
+    root.querySelectorAll("video").forEach((video) => {
+      const source = video.querySelector("source");
+      const src = source?.getAttribute("src") || video.getAttribute("src") || "";
+      const i = src.indexOf("#t=");
+      if (i < 0) return;
+      const t = parseFloat(src.slice(i + 3));
+      if (Number.isNaN(t) || t <= 0) return;
+      video.preload = "metadata";
+      const seek = () => {
+        try {
+          video.currentTime = t;
+        } catch {
+          /* ignore */
+        }
+      };
+      if (video.readyState >= 1) seek();
+      else video.addEventListener("loadedmetadata", seek, { once: true });
+    });
+
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
