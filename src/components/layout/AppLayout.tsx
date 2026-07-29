@@ -79,12 +79,21 @@ class RemoteErrorBoundary extends Component<EBProps, EBState> {
 }
 
 // Sections de la sidebar — adaptables au scope help-selfizee.
+// `icon` = nom d'icône (string) résolu côté hub Konitys.
 const SIDEBAR_SECTIONS = [
   {
     label: "Contenu",
     items: [
-      { label: "Tableau de bord", path: "/admin" },
-      { label: "Posts", path: "/admin/posts" },
+      { icon: "LayoutDashboard", label: "Tableau de bord", path: "/admin" },
+      { icon: "FileText", label: "Posts", path: "/admin/posts" },
+    ],
+  },
+  {
+    label: "Organisation",
+    items: [
+      { icon: "FolderTree", label: "Catégories", path: "/admin/categories" },
+      { icon: "Tag", label: "Tags", path: "/admin/tags" },
+      { icon: "Database", label: "Importer le CRM", path: "/admin/import" },
     ],
   },
 ];
