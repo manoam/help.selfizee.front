@@ -246,12 +246,13 @@ type RapatriementStatus = {
   finished: boolean;
   filesOnDisk: number;
   progress: {
-    phase: "downloading" | "rewriting" | "done";
-    total: number;
+    phase: "starting" | "downloading" | "rewriting" | "done" | "error";
+    total?: number;
     done?: number;
     ok?: number;
     ko?: number;
     rewritten?: number;
+    error?: string;
   } | null;
 };
 
@@ -302,9 +303,13 @@ function RapatriementSection() {
   };
 
   const p = status?.progress;
-  const inProgress = Boolean(p && !status?.finished);
+  // "en cours" = phases actives (starting/downloading/rewriting), pas error/done.
+  const activePhases = ["starting", "downloading", "rewriting"];
+  const inProgress = Boolean(
+    p && !status?.finished && activePhases.includes(p.phase),
+  );
   const pct =
-    p && p.total > 0 && p.done != null
+    p && p.total && p.total > 0 && p.done != null
       ? Math.round((p.done / p.total) * 100)
       : 0;
 
@@ -323,7 +328,12 @@ function RapatriementSection() {
       {/* État */}
       {status && (
         <div className="mb-4 text-xs text-[var(--k-muted)]">
-          {status.finished ? (
+          {p?.phase === "error" ? (
+            <span className="inline-flex items-start gap-1 text-[var(--k-danger)] font-medium">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              Échec : {p.error ?? "erreur inconnue"}
+            </span>
+          ) : status.finished ? (
             <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Terminé — {status.filesOnDisk} images sur le serveur.
