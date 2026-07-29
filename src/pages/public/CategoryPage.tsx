@@ -15,6 +15,7 @@ type CategoryDetail = {
   nom: string;
   slug: string;
   description: string | null;
+  iconeUrl: string | null;
   subCategories: {
     id: number;
     nom: string;
@@ -104,9 +105,17 @@ export function CategoryPage() {
       {/* Header catégorie */}
       <div className="bg-[var(--a-surface-2)] rounded-xl p-5 md:p-6 mb-6">
         <div className="flex items-start gap-4">
-          <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shrink-0">
-            <FolderOpen className="h-6 w-6 text-[var(--a-accent)]" />
-          </span>
+          {category.iconeUrl ? (
+            <img
+              src={`${api.defaults.baseURL ?? ""}${category.iconeUrl}`}
+              alt=""
+              className="h-14 w-14 rounded-xl object-cover shrink-0 bg-white"
+            />
+          ) : (
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-white shrink-0">
+              <FolderOpen className="h-6 w-6 text-[var(--a-accent)]" />
+            </span>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="a-title-accent text-xl md:text-2xl">
               {category.nom}

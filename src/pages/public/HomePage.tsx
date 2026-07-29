@@ -9,6 +9,7 @@ type CategoryWithChildren = {
   nom: string;
   slug: string;
   description: string | null;
+  iconeUrl: string | null;
   subCategories: {
     id: number;
     nom: string;
@@ -88,9 +89,17 @@ export function HomePage() {
             className="a-card a-card-hover block px-5 py-4 group"
           >
             <div className="flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-[var(--a-accent-soft)] shrink-0">
-                <FolderOpen className="h-6 w-6 text-[var(--a-accent)]" />
-              </span>
+              {cat.iconeUrl ? (
+                <img
+                  src={`${api.defaults.baseURL ?? ""}${cat.iconeUrl}`}
+                  alt=""
+                  className="h-14 w-14 rounded-xl object-cover shrink-0"
+                />
+              ) : (
+                <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-[var(--a-accent-soft)] shrink-0">
+                  <FolderOpen className="h-6 w-6 text-[var(--a-accent)]" />
+                </span>
+              )}
               <div className="flex-1 min-w-0">
                 <h3 className="a-title-accent text-lg leading-tight group-hover:underline">
                   {cat.nom}
