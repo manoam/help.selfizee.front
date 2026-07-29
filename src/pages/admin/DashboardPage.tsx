@@ -7,6 +7,7 @@ import {
   Sparkles,
   Tag as TagIcon,
   Database,
+  FolderTree,
 } from "lucide-react";
 
 import { useMe } from "../../hooks/useAuth";
@@ -85,6 +86,13 @@ export function DashboardPage() {
           >
             <FileText className="h-4 w-4" />
             Tous les documents
+          </Link>
+          <Link
+            to="/admin/categories"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[var(--k-text)] border border-[var(--k-border)] bg-white rounded-lg hover:bg-[var(--k-surface-2)] transition"
+          >
+            <FolderTree className="h-4 w-4" />
+            Gérer les catégories
           </Link>
           <Link
             to="/admin/tags"

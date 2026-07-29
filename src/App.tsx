@@ -41,6 +41,11 @@ const TagsAdminPage = lazy(() =>
     default: m.TagsAdminPage,
   })),
 );
+const CategoriesAdminPage = lazy(() =>
+  import("./pages/admin/CategoriesAdminPage").then((m) => ({
+    default: m.CategoriesAdminPage,
+  })),
+);
 const ImportPage = lazy(() =>
   import("./pages/admin/ImportPage").then((m) => ({
     default: m.ImportPage,
@@ -99,6 +104,7 @@ export function App() {
           <Route path="posts/new" element={<PostEditPage />} />
           <Route path="posts/:id" element={<PostEditPage />} />
           <Route path="tags" element={<TagsAdminPage />} />
+          <Route path="categories" element={<CategoriesAdminPage />} />
           <Route path="import" element={<ImportPage />} />
         </Route>
       </Route>

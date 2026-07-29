@@ -128,6 +128,15 @@ export type SubSubCategoryDto = {
   subCategoryId: number;
 };
 export type TagDto = { id: number; name: string; slug: string };
+export type CategoryAdminDto = {
+  id: number;
+  nom: string;
+  slug: string;
+  description: string | null;
+  afficher: boolean;
+  ordre: number;
+  _count?: { subCategories: number; posts: number };
+};
 export type GammeBorneDto = { id: number; nom: string; slug: string };
 export type ModelBorneDto = {
   id: number;
