@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Upload,
@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   FileWarning,
+  ImageDown,
 } from "lucide-react";
 
 import { api } from "../../lib/api";
@@ -178,6 +179,9 @@ export function ImportPage() {
         </div>
       </div>
 
+      {/* Rapatriement des images du CRM */}
+      <RapatriementSection />
+
       {/* Rapport */}
       {report && (
         <div className="mt-6 bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft p-6">
@@ -234,6 +238,138 @@ function ReportStat({ label, value }: { label: string; value: number }) {
     <div className="bg-[var(--k-surface-2)]/40 rounded-lg p-3 text-center">
       <div className="text-xl font-bold text-[var(--k-text)]">{value}</div>
       <div className="text-xs text-[var(--k-muted)]">{label}</div>
+    </div>
+  );
+}
+
+type RapatriementStatus = {
+  finished: boolean;
+  filesOnDisk: number;
+  progress: {
+    phase: "downloading" | "rewriting" | "done";
+    total: number;
+    done?: number;
+    ok?: number;
+    ko?: number;
+    rewritten?: number;
+  } | null;
+};
+
+// Télécharge les images des fiches depuis l'ancien CRM (crm.konitys.fr) vers
+// notre serveur et réécrit les liens. À lancer une fois (avant l'arrêt du CRM).
+function RapatriementSection() {
+  const [status, setStatus] = useState<RapatriementStatus | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const fetchStatus = async () => {
+    try {
+      const { data } = await api.get<RapatriementStatus>(
+        "/admin/rapatriement-status",
+      );
+      setStatus(data);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Charge le statut au montage puis poll toutes les 3s. On garde le poll actif
+  // en continu (léger) pour refléter un rapatriement lancé au boot ou ailleurs.
+  useEffect(() => {
+    fetchStatus();
+    const id = setInterval(fetchStatus, 3000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const start = async () => {
+    setStarting(true);
+    setMsg(null);
+    try {
+      await api.post("/admin/rapatriement/run");
+      setMsg("Rapatriement lancé — il continue en arrière-plan.");
+      setTimeout(fetchStatus, 1500);
+    } catch (err) {
+      const e = err as { response?: { status?: number } };
+      if (e.response?.status === 409)
+        setMsg("Un rapatriement est déjà en cours.");
+      else if (e.response?.status === 404)
+        setMsg("Endpoint absent — le back n'est pas encore redéployé.");
+      else setMsg("Échec du lancement.");
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const p = status?.progress;
+  const inProgress = Boolean(p && !status?.finished);
+  const pct =
+    p && p.total > 0 && p.done != null
+      ? Math.round((p.done / p.total) * 100)
+      : 0;
+
+  return (
+    <div className="mt-6 bg-white border border-[var(--k-border)] rounded-xl2 shadow-soft p-6">
+      <h2 className="text-sm font-semibold text-[var(--k-text)] flex items-center gap-2 mb-1">
+        <ImageDown className="h-4 w-4 text-[var(--k-primary)]" />
+        Rapatrier les images du CRM
+      </h2>
+      <p className="text-xs text-[var(--k-muted)] mb-4">
+        Télécharge toutes les images des fiches depuis l'ancien serveur{" "}
+        <code className="font-mono">crm.konitys.fr</code> vers notre serveur et
+        remplace les liens. À lancer une fois, avant l'arrêt du CRM.
+      </p>
+
+      {/* État */}
+      {status && (
+        <div className="mb-4 text-xs text-[var(--k-muted)]">
+          {status.finished ? (
+            <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Terminé — {status.filesOnDisk} images sur le serveur.
+            </span>
+          ) : inProgress ? (
+            <span>
+              En cours — {p?.done ?? 0}/{p?.total ?? 0} ({p?.ok ?? 0} ok,{" "}
+              {p?.ko ?? 0} échecs)
+              {p?.phase === "rewriting" && " — réécriture des liens…"}
+            </span>
+          ) : (
+            <span>{status.filesOnDisk} images actuellement sur le serveur.</span>
+          )}
+        </div>
+      )}
+
+      {/* Barre de progression */}
+      {inProgress && (
+        <div className="mb-4 h-2 w-full rounded-full bg-[var(--k-surface-2)] overflow-hidden">
+          <div
+            className="h-full bg-[var(--k-primary)] transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={start}
+        disabled={starting || inProgress}
+        className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--k-primary)] rounded-lg hover:brightness-110 transition disabled:opacity-50"
+      >
+        {starting || inProgress ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {inProgress ? "Rapatriement en cours…" : "Lancement…"}
+          </>
+        ) : (
+          <>
+            <ImageDown className="h-4 w-4" />
+            {status?.finished ? "Relancer" : "Lancer le rapatriement"}
+          </>
+        )}
+      </button>
+
+      {msg && <p className="mt-3 text-xs text-[var(--k-muted)]">{msg}</p>}
     </div>
   );
 }
