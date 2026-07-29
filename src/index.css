@@ -495,13 +495,90 @@ select.input-field {
   box-shadow: none !important;
   border: 0 !important;
 }
-/* Vidéos dans l'éditeur admin (extension Video) : bornées et visibles. */
-.tiptap-noring .ProseMirror video {
+/* Vidéos dans l'éditeur admin (extension Video, NodeView). */
+.tiptap-video-block {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  margin: 1rem 0;
+  border-radius: 8px;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s;
+}
+.tiptap-video-block:hover {
+  outline-color: var(--k-primary);
+}
+.tiptap-video-block video {
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 1rem 0;
   border-radius: 6px;
+  background: #000;
+}
+/* Overlay qui capte le clic (empêche la lecture, permet la sélection). */
+.tiptap-video-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.tiptap-video-badge {
+  margin: 8px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 999px;
+  pointer-events: none;
+}
+/* Barre d'outils (dimensions + suppression) au survol / sélection. */
+.tiptap-video-toolbar {
+  position: absolute;
+  top: -12px;
+  right: 8px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  background: #fff;
+  border: 1px solid var(--k-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.tiptap-video-block:hover .tiptap-video-toolbar,
+.ProseMirror-selectednode .tiptap-video-toolbar {
+  display: flex;
+}
+.tiptap-video-dim {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--k-muted);
+}
+.tiptap-video-dim input {
+  width: 52px;
+  padding: 2px 4px;
+  font-size: 11px;
+  border: 1px solid var(--k-border);
+  border-radius: 4px;
+}
+.tiptap-video-delete {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--k-danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
 }
 
 /* Scrollbar custom — repris du projet stock-management pour cohérence visuelle. */
