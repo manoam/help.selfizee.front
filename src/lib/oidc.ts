@@ -30,8 +30,12 @@ export const oidcConfig: AuthProviderProps = {
   // -> échange code→token échoué -> boucle de connexion.
   userStore: new WebStorageStateStore({ store: window.sessionStorage }),
   stateStore: new WebStorageStateStore({ store: window.localStorage }),
-  // Nettoie le `?code=...&state=...` après le callback OIDC
+  // Après le callback OIDC réussi : on remplace l'URL /admin/callback?code=…
+  // par /admin ET on force une vraie navigation. `replaceState` seul ne
+  // notifie pas React Router -> la page restait bloquée sur "Finalisation…"
+  // alors que le token était bien reçu. window.location.replace recharge
+  // proprement sur /admin (où RequireAuth voit désormais le user authentifié).
   onSigninCallback: () => {
-    window.history.replaceState({}, document.title, "/admin");
+    window.location.replace("/admin");
   },
 };
