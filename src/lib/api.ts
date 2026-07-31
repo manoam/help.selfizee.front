@@ -14,9 +14,33 @@ export function setAccessToken(token: string | null) {
   currentAccessToken = token;
 }
 
+// Fallback : lit l'access_token directement depuis le stockage oidc-client-ts.
+// Utile juste après un rechargement (window.location.replace au callback) quand
+// une requête API part AVANT que <AuthBridge> ait pu appeler setAccessToken()
+// -> évite un 401 "missing_bearer" transitoire.
+function tokenFromStore(): string | null {
+  try {
+    const kc = import.meta.env.VITE_KEYCLOAK_URL as string | undefined;
+    const realm = import.meta.env.VITE_KEYCLOAK_REALM as string | undefined;
+    const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID as
+      | string
+      | undefined;
+    if (!kc || !realm || !clientId) return null;
+    const authority = `${kc.replace(/\/$/, "")}/realms/${realm}`;
+    const key = `oidc.user:${authority}:${clientId}`;
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { access_token?: string };
+    return parsed.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 api.interceptors.request.use((config) => {
-  if (currentAccessToken) {
-    config.headers.Authorization = `Bearer ${currentAccessToken}`;
+  const token = currentAccessToken ?? tokenFromStore();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
