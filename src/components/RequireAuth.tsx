@@ -17,11 +17,18 @@ function RequireAuthOidc({ children }: { children: ReactNode }) {
   // est non-null pendant un signin/signout/callback en cours -> on ne relance
   // pas de redirect tant qu'une opération OIDC est en cours.
   useEffect(() => {
-    if (!auth.isLoading && !auth.isAuthenticated && !auth.activeNavigator) {
+    // Ne pas relancer un redirect en cas d'erreur (sinon boucle : erreur ->
+    // redirect -> callback -> erreur -> …). On affiche l'erreur à la place.
+    if (
+      !auth.isLoading &&
+      !auth.isAuthenticated &&
+      !auth.activeNavigator &&
+      !auth.error
+    ) {
       void auth.signinRedirect();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.isLoading, auth.isAuthenticated, auth.activeNavigator]);
+  }, [auth.isLoading, auth.isAuthenticated, auth.activeNavigator, auth.error]);
 
   if (auth.isLoading) {
     return (

@@ -22,9 +22,14 @@ export const oidcConfig: AuthProviderProps = {
   response_type: "code",
   scope: "openid profile email",
   automaticSilentRenew: true,
-  // sessionStorage au lieu de localStorage : le token disparaît à la fermeture
-  // du tab, ce qui limite la fenêtre d'attaque en cas de XSS résiduel.
+  // Le token (userStore) va en sessionStorage : il disparaît à la fermeture du
+  // tab (limite la fenêtre d'attaque XSS). MAIS l'état PKCE transitoire
+  // (state + code_verifier, stateStore) doit survivre à la redirection vers
+  // Keycloak et au retour : on le laisse en localStorage (défaut). Les mettre
+  // tous les deux en sessionStorage causait la perte du code_verifier au retour
+  // -> échange code→token échoué -> boucle de connexion.
   userStore: new WebStorageStateStore({ store: window.sessionStorage }),
+  stateStore: new WebStorageStateStore({ store: window.localStorage }),
   // Nettoie le `?code=...&state=...` après le callback OIDC
   onSigninCallback: () => {
     window.history.replaceState({}, document.title, "/admin");
