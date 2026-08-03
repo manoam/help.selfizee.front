@@ -71,7 +71,10 @@ export function RichTextEditorHtml({
   minHeight = 200,
 }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
+  // Ref = garde anti-double-submit ; state = affichage du spinner (muter une ref
+  // ne re-render pas, cf. R7).
   const uploadingRef = useRef(false);
+  const [uploading, setUploading] = useState(false);
 
   // Modals locaux : accordéon + message (reproduisent les plugins
   // bootstrapaccordion et messages du TinyMCE CRM original).
@@ -136,6 +139,7 @@ export function RichTextEditorHtml({
   const handleImageUpload = async (file: File) => {
     if (uploadingRef.current) return;
     uploadingRef.current = true;
+    setUploading(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -149,6 +153,7 @@ export function RichTextEditorHtml({
       alert("Upload échoué (image trop lourde ou format non supporté).");
     } finally {
       uploadingRef.current = false;
+      setUploading(false);
       if (fileInput.current) fileInput.current.value = "";
     }
   };
@@ -329,7 +334,7 @@ export function RichTextEditorHtml({
           title="Rétablir"
           disabled={!editor.can().redo()}
         />
-        {uploadingRef.current && (
+        {uploading && (
           <span className="ml-auto inline-flex items-center gap-1.5 px-2 text-xs text-[var(--k-muted)]">
             <Loader2 className="h-3 w-3 animate-spin" />
             Upload…
