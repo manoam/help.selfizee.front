@@ -1,17 +1,13 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import type { NodeViewRenderer } from "@tiptap/core";
 
-import { api } from "../../lib/api";
+import { toDisplaySrc } from "../../lib/uploadsUrl";
 
 // Les vidéos sont servies par l'API (/uploads/...), pas par le front. Dans le
-// NodeView on charge donc la vidéo depuis l'URL de l'API, sinon elle se charge
-// depuis le front admin (index.html) et ne s'affiche pas (pas de metadata ->
-// pas de vignette). Le src stocké en base reste relatif (cf. toStorage).
-const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
-function displaySrc(src: string): string {
-  if (!API_BASE) return src;
-  return src.replace(/^(\/uploads?\/)/i, `${API_BASE}$1`);
-}
+// NodeView on charge la vidéo depuis l'URL de l'API (toDisplaySrc), sinon elle
+// se charge depuis le front admin (index.html) et ne s'affiche pas. Le src
+// stocké en base reste relatif.
+const displaySrc = toDisplaySrc;
 
 // Extension TipTap pour la balise <video> (contenu legacy CRM). Sans elle,
 // TipTap ne connaît pas <video>/<source> et les supprime au parsing.

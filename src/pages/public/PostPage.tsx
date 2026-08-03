@@ -280,7 +280,7 @@ export function PostPage() {
                 <FileText className="h-5 w-5 text-[var(--a-accent)] shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-[var(--a-text)] truncate">
-                    {att.label || att.originalName || att.filename}
+                    {att.label || att.originalName || "Document"}
                   </div>
                   {att.description && (
                     <p className="text-xs text-[var(--a-text-muted)] truncate">

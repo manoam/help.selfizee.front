@@ -33,6 +33,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { api } from "../../lib/api";
+import { toDisplayHtml, toStorageHtml } from "../../lib/uploadsUrl";
 import { Modal } from "./Modal";
 
 type MessageType = "info" | "note" | "attention";
@@ -43,27 +44,10 @@ const MESSAGE_LABEL: Record<MessageType, string> = {
   attention: "Attention (rouge)",
 };
 
-// Les images du contenu sont servies par l'API (/uploads/...), pas par le front.
-// Dans l'éditeur on doit préfixer les src relatifs par l'URL de l'API pour les
-// AFFICHER ; mais on stocke du RELATIF en base (portable si le NDD change). D'où
-// deux conversions : display (préfixe) au chargement, storage (retire) au save.
-const API_BASE = (api.defaults.baseURL ?? "").replace(/\/+$/, "");
-// Chemins servis par l'API : /uploads/ (images rapatriées) et /upload/ (uploads
-// WYSIWYG). On les préfixe pour l'affichage, on les remet en relatif au save.
-// Pour l'affichage : /uploads.. ou /upload.. -> {API_BASE}/uploads..
-function toDisplay(html: string): string {
-  if (!API_BASE) return html;
-  return html.replace(
-    /(src|href)=("|')(\/uploads?\/)/gi,
-    (_m, attr, q, p) => `${attr}=${q}${API_BASE}${p}`,
-  );
-}
-// Pour le stockage : {API_BASE}/uploads.. -> /uploads.. (relatif).
-function toStorage(html: string): string {
-  if (!API_BASE) return html;
-  const escaped = API_BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return html.replace(new RegExp(`${escaped}(/uploads?/)`, "gi"), "$1");
-}
+// Préfixage des URLs d'images (affichage) / dé-préfixage (stockage) : factorisé
+// dans lib/uploadsUrl. `toDisplay`/`toStorage` = alias locaux pour lisibilité.
+const toDisplay = toDisplayHtml;
+const toStorage = toStorageHtml;
 
 
 type Props = {
