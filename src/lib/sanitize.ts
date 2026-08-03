@@ -18,10 +18,21 @@ const ALLOWED_ATTR = [
   "controls", "type",
   "colspan", "rowspan",
   "class", "id",
-  "style",
+  // `style` volontairement EXCLU (S6) : aucun usage légitime dans l'éditeur,
+  // et il ouvrait une surface clickjacking (position:fixed) / exfiltration
+  // (background:url()). DOMPurify le retire donc du HTML legacy.
   // Attributs utilisés par les accordéons (plugin bootstrapaccordion CRM).
   "role", "data-toggle", "data-parent",
 ];
+
+// Hook (S7) : force rel="noopener noreferrer" sur tout lien target="_blank"
+// pour empêcher le reverse tabnabbing. Enregistré une seule fois au chargement.
+DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+  if (node instanceof Element && node.tagName === "A" &&
+      node.getAttribute("target") === "_blank") {
+    node.setAttribute("rel", "noopener noreferrer");
+  }
+});
 
 export function safeHtml(html: string | null | undefined): string {
   if (!html) return "";
